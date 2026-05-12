@@ -42,6 +42,9 @@ export function HomeScreen({ navigation }: Props) {
           <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Packs')}>
             <Text style={styles.iconEmoji}>📦</Text>
           </TouchableOpacity>
+          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Settings')}>
+            <Text style={styles.iconEmoji}>⚙️</Text>
+          </TouchableOpacity>
         </View>
       </View>
 

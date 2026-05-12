@@ -7,6 +7,7 @@ import { QuestDetailScreen } from '../screens/QuestDetailScreen';
 import { CompletionScreen } from '../screens/CompletionScreen';
 import { ProgressScreen } from '../screens/ProgressScreen';
 import { PacksScreen } from '../screens/PacksScreen';
+import { SettingsScreen } from '../screens/SettingsScreen';
 
 export type RootStackParamList = {
   Home: undefined;
@@ -15,6 +16,7 @@ export type RootStackParamList = {
   Completion: { questId: string };
   Progress: undefined;
   Packs: undefined;
+  Settings: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -28,6 +30,7 @@ export function RootStack() {
       <Stack.Screen name="Completion" component={CompletionScreen} />
       <Stack.Screen name="Progress" component={ProgressScreen} />
       <Stack.Screen name="Packs" component={PacksScreen} />
+      <Stack.Screen name="Settings" component={SettingsScreen} />
     </Stack.Navigator>
   );
 }
