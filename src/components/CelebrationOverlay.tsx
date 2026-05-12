@@ -86,6 +86,7 @@ export function CelebrationOverlay({
     }, 1200);
 
     return () => {
+      animationRef.current?.stop();
       if (dismissTimer.current) {
         clearTimeout(dismissTimer.current);
         dismissTimer.current = null;
