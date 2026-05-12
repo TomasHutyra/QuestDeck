@@ -5,9 +5,23 @@ import { calculateLevel, updateStreak, todayLocalDate } from '../lib/xp';
 
 export function completeQuest(quest: Quest): CompleteQuestResult {
   const { completedQuests } = useQuestStore.getState();
+  const { totalXp, level, currentStreak, longestStreak, lastCompletedDate } =
+    useProgressStore.getState();
 
   if (completedQuests.some((cq) => cq.questId === quest.id)) {
-    return { status: 'already_completed' };
+    return {
+      status: 'already_completed',
+      questId: quest.id,
+      xpAwarded: 0,
+      totalXpBefore: totalXp,
+      totalXpAfter: totalXp,
+      levelBefore: level,
+      levelAfter: level,
+      levelUp: false,
+      streakBefore: currentStreak,
+      streakAfter: currentStreak,
+      streakExtended: false,
+    };
   }
 
   const completedDate = todayLocalDate();
@@ -18,9 +32,6 @@ export function completeQuest(quest: Quest): CompleteQuestResult {
     completedDate,
     xpAwarded: quest.xp,
   });
-
-  const { totalXp, currentStreak, longestStreak, lastCompletedDate } =
-    useProgressStore.getState();
 
   const newTotalXp = totalXp + quest.xp;
   const newLevel = calculateLevel(newTotalXp);
@@ -39,5 +50,17 @@ export function completeQuest(quest: Quest): CompleteQuestResult {
     lastCompletedDate: completedDate,
   });
 
-  return { status: 'completed', xpAwarded: quest.xp };
+  return {
+    status: 'completed',
+    questId: quest.id,
+    xpAwarded: quest.xp,
+    totalXpBefore: totalXp,
+    totalXpAfter: newTotalXp,
+    levelBefore: level,
+    levelAfter: newLevel,
+    levelUp: newLevel > level,
+    streakBefore: currentStreak,
+    streakAfter: newStreak,
+    streakExtended: newStreak > currentStreak,
+  };
 }
