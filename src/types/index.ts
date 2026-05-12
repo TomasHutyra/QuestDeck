@@ -44,6 +44,16 @@ export type MoodMeta = {
   emoji: string;
 };
 
-export type CompleteQuestResult =
-  | { status: 'completed'; xpAwarded: number }
-  | { status: 'already_completed' };
+export type CompleteQuestResult = {
+  status: 'completed' | 'already_completed';
+  questId: string;
+  xpAwarded: number;
+  totalXpBefore: number;
+  totalXpAfter: number;
+  levelBefore: number;
+  levelAfter: number;
+  levelUp: boolean;
+  streakBefore: number;
+  streakAfter: number;
+  streakExtended: boolean;
+};
