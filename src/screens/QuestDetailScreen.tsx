@@ -5,6 +5,7 @@ import {
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/RootStack';
 import { questById } from '../data/quests';
+import { playQuestAcceptedFeedback } from '../lib/feedback';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'QuestDetail'>;
 
@@ -61,7 +62,10 @@ export function QuestDetailScreen({ navigation, route }: Props) {
 
         <TouchableOpacity
           style={styles.cta}
-          onPress={() => navigation.navigate('Completion', { questId: quest.id })}
+          onPress={() => {
+            playQuestAcceptedFeedback();
+            navigation.navigate('Completion', { questId: quest.id });
+          }}
           activeOpacity={0.85}
         >
           <Text style={styles.ctaText}>I'll do this! →</Text>
