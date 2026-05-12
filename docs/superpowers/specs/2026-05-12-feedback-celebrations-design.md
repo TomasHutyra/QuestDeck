@@ -81,7 +81,7 @@ type CompleteQuestResult = {
 };
 ```
 
-For `already_completed`, all numeric fields are 0 and all boolean fields are `false`. No optional fields — always a complete object.
+For `already_completed`: `xpAwarded` is 0, `levelUp` is `false`, `streakExtended` is `false`. The `totalXpBefore`/`totalXpAfter`, `levelBefore`/`levelAfter`, and `streakBefore`/`streakAfter` pairs all reflect the **current unchanged store values** — so callers can read the live progress state even when no change occurred. No optional fields — always a complete object.
 
 ---
 
@@ -167,11 +167,14 @@ If `expo-audio` installs and works cleanly against SDK 54, implement `playSound(
 type CelebrationOverlayProps = {
   type: 'quest-complete' | 'streak' | 'level-up';
   visible: boolean;
-  xpAwarded: number;
-  newStreak: number;
-  newLevel: number;
+  xpAwarded?: number;   // used by quest-complete
+  newStreak?: number;   // used by streak
+  newLevel?: number;    // used by level-up
+  onDismiss?: () => void;
 };
 ```
+
+The overlay calls `onDismiss?.()` after the 1200ms auto-dismiss timer fires. `CompletionScreen` owns the `visible` state and sets it back to `false` when `onDismiss` is called.
 
 ### Positioning
 
@@ -265,6 +268,26 @@ expect(result.streakExtended).toBe(true); // first completion extends streak
 ```
 
 Add new tests for `levelUp: true` and `streakExtended: true` scenarios.
+
+Add a test confirming that `already_completed` preserves current progress values:
+
+```ts
+it('already_completed preserves current progress values', () => {
+  useProgressStore.setState({ totalXp: 50, level: 1, currentStreak: 3, longestStreak: 5, lastCompletedDate: null });
+  completeQuest(questEasy); // first completion
+  const result = completeQuest(questEasy); // duplicate
+  expect(result.status).toBe('already_completed');
+  expect(result.xpAwarded).toBe(0);
+  expect(result.totalXpBefore).toBe(60);  // 50 + 10 from first completion
+  expect(result.totalXpAfter).toBe(60);
+  expect(result.levelBefore).toBe(1);
+  expect(result.levelAfter).toBe(1);
+  expect(result.streakBefore).toBe(1);    // set by first completion
+  expect(result.streakAfter).toBe(1);
+  expect(result.levelUp).toBe(false);
+  expect(result.streakExtended).toBe(false);
+});
+```
 
 ---
 
