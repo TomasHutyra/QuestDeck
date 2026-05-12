@@ -1,17 +1,33 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, SafeAreaView,
+  SafeAreaView, StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/RootStack';
 import { questById } from '../data/quests';
-import { useQuestStore } from '../stores/questStore';
 import { useProgressStore } from '../stores/progressStore';
+import { useQuestStore } from '../stores/questStore';
 import { completeQuest } from '../actions/completeQuest';
+import {
+  playAlreadyCompletedFeedback,
+  playLevelUpFeedback,
+  playQuestCompletedFeedback,
+  playStreakExtendedFeedback,
+} from '../lib/feedback';
 import { XPBar } from '../components/XPBar';
+import { CelebrationOverlay } from '../components/CelebrationOverlay';
 import { CompleteQuestResult } from '../types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Completion'>;
+
+function overlayTypeFor(
+  result: CompleteQuestResult
+): 'quest-complete' | 'streak' | 'level-up' | null {
+  if (result.status === 'already_completed') return null;
+  if (result.levelUp) return 'level-up';
+  if (result.streakExtended) return 'streak';
+  return 'quest-complete';
+}
 
 export function CompletionScreen({ navigation, route }: Props) {
   const quest = questById[route.params.questId];
@@ -19,11 +35,29 @@ export function CompletionScreen({ navigation, route }: Props) {
   const { totalXp, level, currentStreak } = useProgressStore();
 
   const [result, setResult] = useState<CompleteQuestResult | null>(null);
+  const [overlayVisible, setOverlayVisible] = useState(false);
+  const hasPlayedRef = useRef(false);
 
   const handleMarkDone = () => {
     if (!quest) return;
     const r = completeQuest(quest);
     setResult(r);
+
+    if (!hasPlayedRef.current) {
+      hasPlayedRef.current = true;
+      if (r.status === 'already_completed') {
+        playAlreadyCompletedFeedback();
+      } else if (r.levelUp) {
+        playLevelUpFeedback();
+        setOverlayVisible(true);
+      } else if (r.streakExtended) {
+        playStreakExtendedFeedback();
+        setOverlayVisible(true);
+      } else {
+        playQuestCompletedFeedback();
+        setOverlayVisible(true);
+      }
+    }
   };
 
   const handleBackToHome = () => {
@@ -71,6 +105,8 @@ export function CompletionScreen({ navigation, route }: Props) {
     );
   }
 
+  const celebType = overlayTypeFor(result);
+
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.center}>
@@ -101,6 +137,17 @@ export function CompletionScreen({ navigation, route }: Props) {
           <Text style={styles.homeBtnText}>Back to Home</Text>
         </TouchableOpacity>
       </View>
+
+      {celebType !== null && (
+        <CelebrationOverlay
+          type={celebType}
+          visible={overlayVisible}
+          xpAwarded={result.xpAwarded}
+          newStreak={result.streakAfter}
+          newLevel={result.levelAfter}
+          onDismiss={() => setOverlayVisible(false)}
+        />
+      )}
     </SafeAreaView>
   );
 }
