@@ -9,6 +9,7 @@ import { useQuestStore } from '../stores/questStore';
 import { usePackStore } from '../stores/packStore';
 import { questSelector } from '../lib/questSelector';
 import { QuestCard } from '../components/QuestCard';
+import { playCardRevealFeedback } from '../lib/feedback';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'QuestReveal'>;
 
@@ -40,6 +41,7 @@ export function QuestRevealScreen({ navigation, route }: Props) {
   const handleCardPress = (index: number) => {
     if (!revealedIndexes.includes(index)) {
       setRevealedIndexes((prev) => [...prev, index]);
+      playCardRevealFeedback();
     } else {
       const quest = quests[index];
       if (quest) {
