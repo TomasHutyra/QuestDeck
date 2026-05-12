@@ -35,9 +35,11 @@ beforeEach(() => {
 });
 
 describe('completeQuest', () => {
-  it('returns completed status with xpAwarded', () => {
+  it('returns completed status with xpAwarded and questId', () => {
     const result = completeQuest(questEasy);
-    expect(result).toEqual({ status: 'completed', xpAwarded: 10 });
+    expect(result.status).toBe('completed');
+    expect(result.xpAwarded).toBe(10);
+    expect(result.questId).toBe('test-quest-easy');
   });
 
   it('appends to completedQuests with correct fields', () => {
@@ -76,7 +78,7 @@ describe('completeQuest', () => {
   it('returns already_completed when quest was already done', () => {
     completeQuest(questEasy);
     const result = completeQuest(questEasy);
-    expect(result).toEqual({ status: 'already_completed' });
+    expect(result.status).toBe('already_completed');
   });
 
   it('does not add XP on duplicate completion', () => {
@@ -89,5 +91,42 @@ describe('completeQuest', () => {
     completeQuest(questEasy);
     completeQuest(questEasy);
     expect(useQuestStore.getState().completedQuests).toHaveLength(1);
+  });
+
+  it('reports levelUp true when XP crosses a threshold', () => {
+    useProgressStore.setState({ totalXp: 90, level: 1, currentStreak: 0, longestStreak: 0, lastCompletedDate: null });
+    const result = completeQuest(questEasy);
+    expect(result.levelUp).toBe(true);
+    expect(result.levelBefore).toBe(1);
+    expect(result.levelAfter).toBe(2);
+  });
+
+  it('reports levelUp false when XP stays in same level', () => {
+    const result = completeQuest(questEasy);
+    expect(result.levelUp).toBe(false);
+    expect(result.levelBefore).toBe(result.levelAfter);
+  });
+
+  it('reports streakExtended true on first completion', () => {
+    const result = completeQuest(questEasy);
+    expect(result.streakExtended).toBe(true);
+    expect(result.streakBefore).toBe(0);
+    expect(result.streakAfter).toBe(1);
+  });
+
+  it('already_completed preserves current progress values', () => {
+    useProgressStore.setState({ totalXp: 50, level: 1, currentStreak: 3, longestStreak: 5, lastCompletedDate: null });
+    completeQuest(questEasy); // first completion — streak resets to 1 (lastCompletedDate was null)
+    const result = completeQuest(questEasy); // duplicate
+    expect(result.status).toBe('already_completed');
+    expect(result.xpAwarded).toBe(0);
+    expect(result.totalXpBefore).toBe(60);   // 50 + 10 from first completion
+    expect(result.totalXpAfter).toBe(60);
+    expect(result.levelBefore).toBe(1);
+    expect(result.levelAfter).toBe(1);
+    expect(result.streakBefore).toBe(1);     // set to 1 by first completion (null lastCompletedDate resets streak)
+    expect(result.streakAfter).toBe(1);
+    expect(result.levelUp).toBe(false);
+    expect(result.streakExtended).toBe(false);
   });
 });
