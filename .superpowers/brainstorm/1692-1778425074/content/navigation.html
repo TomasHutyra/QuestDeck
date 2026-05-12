@@ -1,0 +1,75 @@
+<h2>Navigation structure — my recommendation highlighted</h2>
+<p class="subtitle">Consider: users open this app when bored, not to manage data. The core loop is Home → Cards → Done.</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)" style="border:3px solid #4a90d9">
+    <div class="card-image">
+      <div style="background:#1a1a2e;border-radius:10px;margin:12px;overflow:hidden;font-family:sans-serif">
+        <!-- Phone mockup -->
+        <div style="background:#f7f3ec;padding:16px 12px 8px;min-height:220px;position:relative">
+          <!-- Top bar with subtle icons -->
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <span style="font-size:11px;font-weight:700;color:#333;letter-spacing:1px">QUESTDECK</span>
+            <div style="display:flex;gap:10px">
+              <span style="font-size:16px">📦</span>
+              <span style="font-size:16px">⭐</span>
+            </div>
+          </div>
+          <!-- Mood buttons -->
+          <div style="font-size:11px;color:#888;margin-bottom:8px;text-align:center">How are you feeling?</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center">
+            <span style="background:#fff;border:1px solid #ddd;border-radius:20px;padding:5px 10px;font-size:10px">😴 Bored</span>
+            <span style="background:#fff;border:1px solid #ddd;border-radius:20px;padding:5px 10px;font-size:10px">🏠 At Home</span>
+            <span style="background:#fff;border:1px solid #ddd;border-radius:20px;padding:5px 10px;font-size:10px">🌿 Outside</span>
+            <span style="background:#fff;border:1px solid #ddd;border-radius:20px;padding:5px 10px;font-size:10px">❤️ Partner</span>
+            <span style="background:#fff;border:1px solid #ddd;border-radius:20px;padding:5px 10px;font-size:10px">👯 Friends</span>
+            <span style="background:#fff;border:1px solid #ddd;border-radius:20px;padding:5px 10px;font-size:10px">🎨 Creative</span>
+          </div>
+          <!-- No bottom tab bar — clean -->
+        </div>
+      </div>
+      <div style="text-align:center;padding:8px 12px;font-size:11px;color:#4a90d9;font-weight:600">★ RECOMMENDED</div>
+    </div>
+    <div class="card-body">
+      <h3>B — Stack-only (immersive flow)</h3>
+      <p>Home screen is the entire app. Progress and Packs are icon buttons top-right — accessible but not competing for attention. Quest flow goes forward screen by screen, back button returns. Feels like a card deck, not a dashboard.</p>
+      <div class="pros-cons" style="font-size:11px;margin-top:8px">
+        <div class="pros"><h4>Pros</h4><ul><li>Playful, not utilitarian</li><li>Focus stays on the quest flow</li><li>Less chrome = bigger cards</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Progress/Packs slightly less discoverable</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#1a1a2e;border-radius:10px;margin:12px;overflow:hidden;font-family:sans-serif">
+        <div style="background:#f7f3ec;padding:16px 12px 8px;min-height:220px;position:relative">
+          <div style="text-align:center;font-size:11px;font-weight:700;color:#333;letter-spacing:1px;margin-bottom:12px">QUESTDECK</div>
+          <div style="font-size:11px;color:#888;margin-bottom:8px;text-align:center">How are you feeling?</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center">
+            <span style="background:#fff;border:1px solid #ddd;border-radius:20px;padding:5px 10px;font-size:10px">😴 Bored</span>
+            <span style="background:#fff;border:1px solid #ddd;border-radius:20px;padding:5px 10px;font-size:10px">🏠 At Home</span>
+            <span style="background:#fff;border:1px solid #ddd;border-radius:20px;padding:5px 10px;font-size:10px">🌿 Outside</span>
+            <span style="background:#fff;border:1px solid #ddd;border-radius:20px;padding:5px 10px;font-size:10px">❤️ Partner</span>
+          </div>
+          <!-- Bottom tab bar -->
+          <div style="position:absolute;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e0e0e0;display:flex;justify-content:space-around;padding:6px 0">
+            <div style="text-align:center;font-size:9px;color:#4a90d9"><div style="font-size:16px">🏠</div>Home</div>
+            <div style="text-align:center;font-size:9px;color:#999"><div style="font-size:16px">⭐</div>Progress</div>
+            <div style="text-align:center;font-size:9px;color:#999"><div style="font-size:16px">📦</div>Packs</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Bottom tab bar</h3>
+      <p>Home, Progress, Packs always visible at the bottom. Familiar and discoverable but makes the app feel like a productivity tool. Permanent chrome reduces screen space for cards.</p>
+      <div class="pros-cons" style="font-size:11px;margin-top:8px">
+        <div class="pros"><h4>Pros</h4><ul><li>Instantly discoverable</li><li>Standard pattern users know</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Feels like Duolingo, not a card deck</li><li>Wastes vertical space</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+</div>

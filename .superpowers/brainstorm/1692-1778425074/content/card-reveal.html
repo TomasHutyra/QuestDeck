@@ -1,0 +1,44 @@
+<h2>How do the 3 quest cards get revealed?</h2>
+<p class="subtitle">This is the core interaction loop — tap a mood → see 3 cards → pick one quest</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="display:flex;gap:8px;justify-content:center;padding:16px 8px">
+        <div style="width:60px;height:90px;border-radius:8px;background:#4a90d9;display:flex;align-items:center;justify-content:center;color:white;font-size:20px">?</div>
+        <div style="width:60px;height:90px;border-radius:8px;background:#4a90d9;display:flex;align-items:center;justify-content:center;color:white;font-size:20px">?</div>
+        <div style="width:60px;height:90px;border-radius:8px;background:#4a90d9;display:flex;align-items:center;justify-content:center;color:white;font-size:20px">?</div>
+      </div>
+      <div style="text-align:center;font-size:12px;color:#666;padding-bottom:8px">▼ tap any card to flip all</div>
+      <div style="display:flex;gap:8px;justify-content:center;padding:0 8px 16px">
+        <div style="width:60px;height:90px;border-radius:8px;background:#f5f0e8;border:2px solid #e8d5a0;display:flex;align-items:center;justify-content:center;font-size:10px;text-align:center;padding:4px;color:#333">3-Color Walk</div>
+        <div style="width:60px;height:90px;border-radius:8px;background:#f5f0e8;border:2px solid #e8d5a0;display:flex;align-items:center;justify-content:center;font-size:10px;text-align:center;padding:4px;color:#333">Tiny Table Reset</div>
+        <div style="width:60px;height:90px;border-radius:8px;background:#f5f0e8;border:2px solid #e8d5a0;display:flex;align-items:center;justify-content:center;font-size:10px;text-align:center;padding:4px;color:#333">No-Phone Window</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Reveal all at once</h3>
+      <p>One tap flips all 3 cards simultaneously. Fast, decisive. You see all your options immediately and pick one.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="display:flex;gap:8px;justify-content:center;padding:16px 8px">
+        <div style="width:60px;height:90px;border-radius:8px;background:#f5f0e8;border:2px solid #e8d5a0;display:flex;align-items:center;justify-content:center;font-size:10px;text-align:center;padding:4px;color:#333">3-Color Walk</div>
+        <div style="width:60px;height:90px;border-radius:8px;background:#4a90d9;display:flex;align-items:center;justify-content:center;color:white;font-size:20px">?</div>
+        <div style="width:60px;height:90px;border-radius:8px;background:#4a90d9;display:flex;align-items:center;justify-content:center;color:white;font-size:20px">?</div>
+      </div>
+      <div style="text-align:center;font-size:12px;color:#666;padding-bottom:8px">▼ tap each card one by one</div>
+      <div style="display:flex;gap:8px;justify-content:center;padding:0 8px 16px">
+        <div style="width:60px;height:90px;border-radius:8px;background:#f5f0e8;border:2px solid #e8d5a0;display:flex;align-items:center;justify-content:center;font-size:10px;text-align:center;padding:4px;color:#333">3-Color Walk</div>
+        <div style="width:60px;height:90px;border-radius:8px;background:#f5f0e8;border:2px solid #e8d5a0;display:flex;align-items:center;justify-content:center;font-size:10px;text-align:center;padding:4px;color:#333">Tiny Table Reset</div>
+        <div style="width:60px;height:90px;border-radius:8px;background:#f5f0e8;border:2px solid #e8d5a0;display:flex;align-items:center;justify-content:center;font-size:10px;text-align:center;padding:4px;color:#333">No-Phone Window</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Reveal one by one</h3>
+      <p>Each card flips independently. Feels more like drawing from a deck. Adds suspense but requires 3 taps before you can choose.</p>
+    </div>
+  </div>
+</div>
