@@ -24,6 +24,12 @@ export function CelebrationOverlay({
   const translateY = useRef(new Animated.Value(10)).current;
   const scale = useRef(new Animated.Value(0.6)).current;
   const dismissTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onDismissRef = useRef(onDismiss);
+  const animationRef = useRef<Animated.CompositeAnimation | null>(null);
+
+  useEffect(() => {
+    onDismissRef.current = onDismiss;
+  });
 
   useEffect(() => {
     if (dismissTimer.current) {
@@ -38,6 +44,8 @@ export function CelebrationOverlay({
       return;
     }
 
+    animationRef.current?.stop();
+
     if (reducedMotionEnabled) {
       opacity.setValue(1);
       translateY.setValue(0);
@@ -45,14 +53,15 @@ export function CelebrationOverlay({
     } else if (type === 'quest-complete') {
       opacity.setValue(0);
       translateY.setValue(10);
-      Animated.parallel([
+      animationRef.current = Animated.parallel([
         Animated.timing(opacity, { toValue: 1, duration: 400, useNativeDriver: true }),
         Animated.timing(translateY, { toValue: 0, duration: 400, useNativeDriver: true }),
-      ]).start();
+      ]);
+      animationRef.current.start();
     } else if (type === 'streak') {
       opacity.setValue(0);
       scale.setValue(0.6);
-      Animated.parallel([
+      animationRef.current = Animated.parallel([
         Animated.timing(opacity, { toValue: 1, duration: 200, useNativeDriver: true }),
         Animated.spring(scale, {
           toValue: 1,
@@ -60,18 +69,20 @@ export function CelebrationOverlay({
           stiffness: 150,
           useNativeDriver: true,
         }),
-      ]).start();
+      ]);
+      animationRef.current.start();
     } else if (type === 'level-up') {
       opacity.setValue(0);
       scale.setValue(0.85);
-      Animated.parallel([
+      animationRef.current = Animated.parallel([
         Animated.timing(opacity, { toValue: 1, duration: 450, useNativeDriver: true }),
         Animated.timing(scale, { toValue: 1, duration: 450, useNativeDriver: true }),
-      ]).start();
+      ]);
+      animationRef.current.start();
     }
 
     dismissTimer.current = setTimeout(() => {
-      onDismiss?.();
+      onDismissRef.current?.();
     }, 1200);
 
     return () => {
@@ -80,7 +91,7 @@ export function CelebrationOverlay({
         dismissTimer.current = null;
       }
     };
-  }, [visible, type, reducedMotionEnabled]);
+  }, [visible, type, reducedMotionEnabled, opacity, translateY, scale]);
 
   if (!visible) return null;
 
