@@ -5,6 +5,7 @@ export const STORAGE_KEYS = {
   PROGRESS: 'questdeck-progress',
   QUESTS: 'questdeck-quests',
   PACKS: 'questdeck-packs',
+  SETTINGS: 'questdeck-settings',
 } as const;
 
 export const jsonStorage = createJSONStorage(() => AsyncStorage);
