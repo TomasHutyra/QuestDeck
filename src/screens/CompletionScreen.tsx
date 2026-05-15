@@ -1,7 +1,8 @@
 import React, { useRef, useState } from 'react';
 import {
-  SafeAreaView, StyleSheet, Text, TouchableOpacity, View,
+  StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/RootStack';
 import { questById } from '../data/quests';

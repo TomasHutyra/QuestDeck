@@ -1,7 +1,8 @@
 import React from 'react';
 import {
-  SafeAreaView, StyleSheet, Switch, Text, TouchableOpacity, View,
+  StyleSheet, Switch, Text, TouchableOpacity, View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/RootStack';
 import { useSettingsStore } from '../stores/settingsStore';

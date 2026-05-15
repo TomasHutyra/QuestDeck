@@ -22,7 +22,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.ragnor83.questdeck"
+      "package": "com.BookdragonDev.QuestDeck"
     },
     "web": {
       "favicon": "./assets/favicon.png"
