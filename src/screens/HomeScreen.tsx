@@ -1,7 +1,8 @@
 import React from 'react';
 import {
-  View, Text, TouchableOpacity, FlatList, StyleSheet, SafeAreaView,
+  View, Text, TouchableOpacity, FlatList, StyleSheet, Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/RootStack';
 import { MOODS } from '../data/moods';
@@ -31,10 +32,11 @@ export function HomeScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>QuestDeck</Text>
-          <Text style={styles.subtitle}>What do you feel like?</Text>
-        </View>
+        <Image
+          source={require('../../assets/OD_logo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
         <View style={styles.icons}>
           <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Progress')}>
             <Text style={styles.iconEmoji}>⭐</Text>
@@ -72,8 +74,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingHorizontal: 16, paddingTop: 12, paddingBottom: 4,
   },
-  title: { fontSize: 20, fontWeight: '900', color: '#1a1a1a' },
-  subtitle: { fontSize: 12, color: '#aaa', marginTop: 2 },
+  logo: { height: 44, aspectRatio: 1491 / 1055 },
   icons: { flexDirection: 'row', gap: 8 },
   iconBtn: {
     width: 36, height: 36, backgroundColor: '#fff', borderRadius: 10,
