@@ -1,7 +1,8 @@
 import React from 'react';
 import {
-  View, Text, FlatList, StyleSheet, SafeAreaView, TouchableOpacity,
+  View, Text, FlatList, StyleSheet, TouchableOpacity,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/RootStack';
 import { useProgressStore } from '../stores/progressStore';
@@ -85,7 +86,13 @@ export function ProgressScreen({ navigation }: Props) {
             {sorted.length > 0 ? (
               <Text style={styles.sectionLabel}>RECENT QUESTS</Text>
             ) : (
-              <Text style={styles.emptyHint}>Complete your first quest to see history here.</Text>
+              <View style={styles.emptyCard}>
+                <Text style={styles.emptyEmoji}>🗺️</Text>
+                <Text style={styles.emptyTitle}>No quests yet</Text>
+                <Text style={styles.emptyBody}>
+                  Head back to the home screen, pick a mood, and complete your first quest. It will appear here.
+                </Text>
+              </View>
             )}
           </View>
         }
@@ -131,7 +138,13 @@ const styles = StyleSheet.create({
     fontSize: 11, fontWeight: '700', color: '#aaa',
     letterSpacing: 0.5, paddingHorizontal: 0,
   },
-  emptyHint: { fontSize: 13, color: '#ccc', textAlign: 'center', marginTop: 16 },
+  emptyCard: {
+    marginTop: 24, alignItems: 'center', padding: 24,
+    backgroundColor: 'white', borderRadius: 16, gap: 8,
+  },
+  emptyEmoji: { fontSize: 40 },
+  emptyTitle: { fontSize: 16, fontWeight: '800', color: '#1a1a1a' },
+  emptyBody: { fontSize: 13, color: '#aaa', textAlign: 'center', lineHeight: 20 },
   historyItem: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     backgroundColor: 'white', borderRadius: 12, padding: 12, marginHorizontal: 16,
