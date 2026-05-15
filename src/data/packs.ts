@@ -7,20 +7,23 @@ export const PACKS: Pack[] = [
     description: 'Everyday quests for any mood',
     isPremium: false,
     emoji: '🎒',
+    questCount: 100,
   },
   {
     id: 'date-night',
     name: 'Date Night',
-    description: '25 quests for couples',
+    description: 'Quests built for two — conversation, adventure, and connection',
     isPremium: true,
     emoji: '💑',
+    questCount: 25,
   },
   {
     id: 'city-explorer',
     name: 'City Explorer',
-    description: '20 outdoor urban quests',
+    description: 'Urban adventures to discover your city like a stranger would',
     isPremium: true,
     emoji: '🌆',
+    questCount: 20,
   },
 ];
 

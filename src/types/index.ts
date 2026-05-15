@@ -29,6 +29,7 @@ export type Pack = {
   description: string;
   isPremium: boolean;
   emoji: string;
+  questCount: number;
 };
 
 export type CompletedQuest = {
