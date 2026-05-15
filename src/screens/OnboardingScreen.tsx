@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, Dimensions,
+  View, Text, TouchableOpacity, StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -26,8 +26,6 @@ const SLIDES = [
     body: 'Pick one quest, go do it, and earn XP. No screens required.',
   },
 ];
-
-const { width } = Dimensions.get('window');
 
 export function OnboardingScreen({ navigation }: Props) {
   const [index, setIndex] = useState(0);
