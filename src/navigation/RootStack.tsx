@@ -1,6 +1,8 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Mood } from '../types';
+import { useSettingsStore } from '../stores/settingsStore';
+import { OnboardingScreen } from '../screens/OnboardingScreen';
 import { HomeScreen } from '../screens/HomeScreen';
 import { QuestRevealScreen } from '../screens/QuestRevealScreen';
 import { QuestDetailScreen } from '../screens/QuestDetailScreen';
@@ -10,6 +12,7 @@ import { PacksScreen } from '../screens/PacksScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 
 export type RootStackParamList = {
+  Onboarding: undefined;
   Home: undefined;
   QuestReveal: { mood: Mood };
   QuestDetail: { questId: string };
@@ -22,8 +25,14 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootStack() {
+  const onboardingSeen = useSettingsStore((s) => s.onboardingSeen);
+
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator
+      initialRouteName={onboardingSeen ? 'Home' : 'Onboarding'}
+      screenOptions={{ headerShown: false }}
+    >
+      <Stack.Screen name="Onboarding" component={OnboardingScreen} />
       <Stack.Screen name="Home" component={HomeScreen} />
       <Stack.Screen name="QuestReveal" component={QuestRevealScreen} />
       <Stack.Screen name="QuestDetail" component={QuestDetailScreen} />
