@@ -33,7 +33,7 @@ export function HomeScreen({ navigation }: Props) {
     <SafeAreaView style={styles.safe}>
       <View style={styles.header}>
         <Image
-          source={require('../../assets/OD_logo.png')}
+          source={require('../../assets/logo_header.png')}
           style={styles.logo}
         />
         <View style={styles.icons}>
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingHorizontal: 16, paddingTop: 12, paddingBottom: 4,
   },
-  logo: { height: 44, aspectRatio: 1491 / 1055, resizeMode: 'contain' },
+  logo: { height: 44, width: 62 },
   icons: { flexDirection: 'row', gap: 8 },
   iconBtn: {
     width: 36, height: 36, backgroundColor: '#fff', borderRadius: 10,
