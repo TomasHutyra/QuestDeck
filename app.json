@@ -22,7 +22,8 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.BookdragonDev.QuestDeck"
+      "package": "com.BookdragonDev.QuestDeck",
+      "minSdkVersion": 24
     },
     "web": {
       "favicon": "./assets/favicon.png"
