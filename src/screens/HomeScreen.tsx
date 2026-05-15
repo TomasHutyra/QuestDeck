@@ -35,7 +35,6 @@ export function HomeScreen({ navigation }: Props) {
         <Image
           source={require('../../assets/OD_logo.png')}
           style={styles.logo}
-          resizeMode="contain"
         />
         <View style={styles.icons}>
           <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Progress')}>
@@ -74,7 +73,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingHorizontal: 16, paddingTop: 12, paddingBottom: 4,
   },
-  logo: { height: 44, aspectRatio: 1491 / 1055 },
+  logo: { height: 44, aspectRatio: 1491 / 1055, resizeMode: 'contain' },
   icons: { flexDirection: 'row', gap: 8 },
   iconBtn: {
     width: 36, height: 36, backgroundColor: '#fff', borderRadius: 10,
