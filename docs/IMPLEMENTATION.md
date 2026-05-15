@@ -207,17 +207,6 @@ npx expo run:android
 
 Installs a debug APK signed with the debug keystore. Metro bundler serves the JS bundle over USB.
 
-### Release build (for Play Store)
-
-```bash
-cd android
-gradlew bundleRelease
-```
-
-Output: `android/app/build/outputs/bundle/release/app-release.aab`
-
-Signed with `android/app/questdeck.keystore` using credentials from `android/gradle.properties`.
-
 ### Regenerating the native Android project
 
 If `android/` gets corrupted or after changing `app.json` (icons, package name, plugins):
@@ -227,6 +216,80 @@ npx expo prebuild --platform android
 ```
 
 This regenerates `android/` from `app.json`. The existing `android/app/build.gradle` signing config and keystore are preserved if you run without `--clean`.
+
+---
+
+## Google Play Release Build
+
+### Prerequisites
+
+- `android/app/questdeck.keystore` exists
+- `android/gradle.properties` contains correct passwords
+- `versionCode` and `versionName` in `android/app/build.gradle` are updated
+
+### Step 1 — Bump version
+
+In `android/app/build.gradle`:
+
+```groovy
+versionCode 2          // integer, increment by 1 for every upload to Play Store
+versionName "1.1.0"    // human-readable, shown on the store page
+```
+
+`versionCode` must be strictly higher than any previously uploaded version. Play Store rejects a duplicate.
+
+### Step 2 — Clear old build output (optional but safe)
+
+```bash
+cd android
+gradlew clean
+```
+
+### Step 3 — Build the AAB
+
+```bash
+cd android
+gradlew bundleRelease
+```
+
+Output:
+```
+android/app/build/outputs/bundle/release/app-release.aab
+```
+
+Build time: ~2–5 minutes on first run, faster with Gradle cache.
+
+### Step 4 — Verify the AAB (optional)
+
+Check that the bundle is signed with the correct key:
+
+```bash
+cd android
+gradlew signingReport
+```
+
+Look for `Variant: release` — it should show `questdeck.keystore`, not `debug.keystore`.
+
+### Step 5 — Upload to Google Play Console
+
+1. Open [Google Play Console](https://play.google.com/console)
+2. Select **QuestDeck**
+3. Go to **Production → Create new release** (or Internal testing for a test upload)
+4. Click **Upload** and select `app-release.aab`
+5. Fill in release notes (what changed in this version)
+6. Click **Save → Review release → Start rollout**
+
+Google reviews new releases in 1–3 business days. Updates to existing apps are usually reviewed within a few hours.
+
+### Checklist before every release
+
+- [ ] `versionCode` incremented in `build.gradle`
+- [ ] `versionName` updated in `build.gradle`
+- [ ] `npm run validate:quests` passes
+- [ ] `npx tsc --noEmit` passes (no TypeScript errors)
+- [ ] Tested on a physical device with `npx expo run:android`
+- [ ] `gradlew bundleRelease` completes without errors
+- [ ] AAB uploaded to Play Console internal testing and verified on device before promoting to production
 
 ---
 
