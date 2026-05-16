@@ -7,6 +7,8 @@ type SettingsState = {
   hapticsEnabled: boolean;
   reducedMotionEnabled: boolean;
   onboardingSeen: boolean;
+  dailyReminderEnabled: boolean;
+  dailyReminderTime: string; // HH:MM, e.g. "09:00"
 };
 
 type SettingsActions = {
@@ -14,6 +16,8 @@ type SettingsActions = {
   setHapticsEnabled: (v: boolean) => void;
   setReducedMotionEnabled: (v: boolean) => void;
   setOnboardingSeen: (v: boolean) => void;
+  setDailyReminderEnabled: (v: boolean) => void;
+  setDailyReminderTime: (v: string) => void;
 };
 
 const initialState: SettingsState = {
@@ -21,6 +25,8 @@ const initialState: SettingsState = {
   hapticsEnabled: true,
   reducedMotionEnabled: false,
   onboardingSeen: false,
+  dailyReminderEnabled: false,
+  dailyReminderTime: '09:00',
 };
 
 export const useSettingsStore = create<SettingsState & SettingsActions>()(
@@ -31,6 +37,8 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       setHapticsEnabled: (v) => set({ hapticsEnabled: v }),
       setReducedMotionEnabled: (v) => set({ reducedMotionEnabled: v }),
       setOnboardingSeen: (v) => set({ onboardingSeen: v }),
+      setDailyReminderEnabled: (v) => set({ dailyReminderEnabled: v }),
+      setDailyReminderTime: (v) => set({ dailyReminderTime: v }),
     }),
     {
       name: STORAGE_KEYS.SETTINGS,
