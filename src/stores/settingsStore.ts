@@ -8,7 +8,10 @@ type SettingsState = {
   reducedMotionEnabled: boolean;
   onboardingSeen: boolean;
   dailyReminderEnabled: boolean;
-  dailyReminderTime: string; // HH:MM, e.g. "09:00"
+  dailyReminderTime: string; // HH:MM
+  notificationPromptDismissCount: number;
+  notificationPromptDismissedAt: string | null; // YYYY-MM-DD of last "Maybe later"
+  notificationPromptLastShownAt: string | null;  // YYYY-MM-DD of last show (dismiss or ignore)
 };
 
 type SettingsActions = {
@@ -18,6 +21,9 @@ type SettingsActions = {
   setOnboardingSeen: (v: boolean) => void;
   setDailyReminderEnabled: (v: boolean) => void;
   setDailyReminderTime: (v: string) => void;
+  setNotificationPromptDismissCount: (v: number) => void;
+  setNotificationPromptDismissedAt: (v: string | null) => void;
+  setNotificationPromptLastShownAt: (v: string | null) => void;
 };
 
 const initialState: SettingsState = {
@@ -26,7 +32,10 @@ const initialState: SettingsState = {
   reducedMotionEnabled: false,
   onboardingSeen: false,
   dailyReminderEnabled: false,
-  dailyReminderTime: '09:00',
+  dailyReminderTime: '18:00',
+  notificationPromptDismissCount: 0,
+  notificationPromptDismissedAt: null,
+  notificationPromptLastShownAt: null,
 };
 
 export const useSettingsStore = create<SettingsState & SettingsActions>()(
@@ -39,6 +48,9 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       setOnboardingSeen: (v) => set({ onboardingSeen: v }),
       setDailyReminderEnabled: (v) => set({ dailyReminderEnabled: v }),
       setDailyReminderTime: (v) => set({ dailyReminderTime: v }),
+      setNotificationPromptDismissCount: (v) => set({ notificationPromptDismissCount: v }),
+      setNotificationPromptDismissedAt: (v) => set({ notificationPromptDismissedAt: v }),
+      setNotificationPromptLastShownAt: (v) => set({ notificationPromptLastShownAt: v }),
     }),
     {
       name: STORAGE_KEYS.SETTINGS,
