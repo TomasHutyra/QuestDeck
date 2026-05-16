@@ -1,6 +1,6 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  StyleSheet, Text, TouchableOpacity, View,
+  Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -8,6 +8,7 @@ import { RootStackParamList } from '../navigation/RootStack';
 import { questById } from '../data/quests';
 import { useProgressStore } from '../stores/progressStore';
 import { useQuestStore } from '../stores/questStore';
+import { useSettingsStore } from '../stores/settingsStore';
 import { completeQuest } from '../actions/completeQuest';
 import {
   playAlreadyCompletedFeedback,
@@ -15,8 +16,20 @@ import {
   playQuestCompletedFeedback,
   playStreakExtendedFeedback,
 } from '../lib/feedback';
+import {
+  requestNotificationPermission,
+  scheduleDailyReminder,
+} from '../lib/notifications';
+import {
+  shouldShowNotificationPrompt,
+  recordNotificationPromptShown,
+  recordNotificationPromptDismissed,
+  recordNotificationPromptAccepted,
+} from '../lib/notificationPrompt';
+import { todayLocalDate } from '../lib/xp';
 import { XPBar } from '../components/XPBar';
 import { CelebrationOverlay } from '../components/CelebrationOverlay';
+import { NotificationPromptCard } from '../components/NotificationPromptCard';
 import { CompleteQuestResult } from '../types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Completion'>;
@@ -34,10 +47,32 @@ export function CompletionScreen({ navigation, route }: Props) {
   const quest = questById[route.params.questId];
   const { clearActiveAndRevealed } = useQuestStore();
   const { totalXp, level, currentStreak } = useProgressStore();
+  const {
+    dailyReminderEnabled, setDailyReminderEnabled,
+    notificationPromptDismissCount,
+    notificationPromptDismissedAt,
+    notificationPromptLastShownAt,
+  } = useSettingsStore();
 
   const [result, setResult] = useState<CompleteQuestResult | null>(null);
   const [overlayVisible, setOverlayVisible] = useState(false);
+  const [promptVisible, setPromptVisible] = useState(false);
   const hasPlayedRef = useRef(false);
+  const promptShownRef = useRef(false);
+
+  useEffect(() => {
+    if (result !== null && result.status !== 'already_completed' && !promptShownRef.current) {
+      const show = shouldShowNotificationPrompt(
+        { dailyReminderEnabled, notificationPromptDismissCount, notificationPromptDismissedAt, notificationPromptLastShownAt },
+        todayLocalDate(),
+      );
+      if (show) {
+        promptShownRef.current = true;
+        setPromptVisible(true);
+        recordNotificationPromptShown();
+      }
+    }
+  }, [result]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleMarkDone = () => {
     if (!quest) return;
@@ -59,6 +94,27 @@ export function CompletionScreen({ navigation, route }: Props) {
         setOverlayVisible(true);
       }
     }
+  };
+
+  const handleRemindMe = async () => {
+    const granted = await requestNotificationPermission();
+    if (!granted) {
+      Alert.alert('Permission required', 'Enable notifications for QuestDeck in your device settings.');
+      return;
+    }
+    try {
+      await scheduleDailyReminder('18:00');
+      setDailyReminderEnabled(true);
+      recordNotificationPromptAccepted();
+      setPromptVisible(false);
+    } catch {
+      Alert.alert('Could not schedule reminder', 'Something went wrong. Please try again.');
+    }
+  };
+
+  const handleMaybeLater = () => {
+    recordNotificationPromptDismissed();
+    setPromptVisible(false);
   };
 
   const handleBackToHome = () => {
@@ -110,7 +166,7 @@ export function CompletionScreen({ navigation, route }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.center}>
+      <ScrollView contentContainerStyle={styles.center} bounces={false}>
         <Text style={styles.celebrationEmoji}>🎉</Text>
         <Text style={styles.completeTitle}>Quest Complete!</Text>
         <Text style={styles.questSubtitle}>{quest.title}</Text>
@@ -134,10 +190,17 @@ export function CompletionScreen({ navigation, route }: Props) {
           <XPBar level={level} totalXp={totalXp} />
         </View>
 
+        {promptVisible && (
+          <NotificationPromptCard
+            onRemindMe={handleRemindMe}
+            onMaybeLater={handleMaybeLater}
+          />
+        )}
+
         <TouchableOpacity style={styles.homeBtn} onPress={handleBackToHome} activeOpacity={0.85}>
           <Text style={styles.homeBtnText}>Back to Home</Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
 
       {celebType !== null && (
         <CelebrationOverlay
@@ -156,7 +219,7 @@ export function CompletionScreen({ navigation, route }: Props) {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#FFF8F0' },
   error: { margin: 24, color: '#aaa' },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 12 },
+  center: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 12 },
   celebrationEmoji: { fontSize: 56 },
   completeTitle: { fontSize: 22, fontWeight: '900', color: '#1a1a1a' },
   questTitle: { fontSize: 16, fontWeight: '700', color: '#1a1a1a' },
