@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
-  View, Text, Image, FlatList, StyleSheet, TouchableOpacity,
+  View, Text, Image, FlatList, Modal, StyleSheet, TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -17,6 +17,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Progress'>;
 export function ProgressScreen({ navigation }: Props) {
   const { totalXp, level, currentStreak, longestStreak } = useProgressStore();
   const { completedQuests } = useQuestStore();
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
 
   const { earned, total } = xpProgressInCurrentLevel(totalXp);
   const progress = total > 0 ? earned / total : 1;
@@ -29,7 +30,11 @@ export function ProgressScreen({ navigation }: Props) {
   const renderItem = ({ item }: { item: CompletedQuest }) => {
     const quest = questById[item.questId];
     return (
-      <View style={styles.historyItem}>
+      <TouchableOpacity
+        style={styles.historyItem}
+        activeOpacity={item.photoUri ? 0.7 : 1}
+        onPress={() => { if (item.photoUri) setSelectedPhoto(item.photoUri); }}
+      >
         {item.photoUri && (
           <Image source={{ uri: item.photoUri }} style={styles.historyThumb} />
         )}
@@ -38,7 +43,7 @@ export function ProgressScreen({ navigation }: Props) {
           <Text style={styles.historyDate}>{item.completedDate}</Text>
         </View>
         <Text style={styles.historyXp}>+{item.xpAwarded} XP</Text>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -103,6 +108,24 @@ export function ProgressScreen({ navigation }: Props) {
         renderItem={renderItem}
         contentContainerStyle={styles.list}
       />
+
+      <Modal
+        visible={selectedPhoto !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setSelectedPhoto(null)}
+      >
+        <TouchableOpacity
+          style={styles.photoOverlay}
+          activeOpacity={1}
+          onPress={() => setSelectedPhoto(null)}
+        >
+          {selectedPhoto && (
+            <Image source={{ uri: selectedPhoto }} style={styles.photoFull} resizeMode="contain" />
+          )}
+          <Text style={styles.photoClose}>✕</Text>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -158,4 +181,13 @@ const styles = StyleSheet.create({
   historyTitle: { fontSize: 13, fontWeight: '700', color: '#1a1a1a' },
   historyDate: { fontSize: 11, color: '#aaa' },
   historyXp: { fontSize: 12, fontWeight: '700', color: '#FF8C42' },
+  photoOverlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.92)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  photoFull: { width: '100%', height: '85%' },
+  photoClose: {
+    position: 'absolute', top: 52, right: 20,
+    fontSize: 20, color: 'rgba(255,255,255,0.7)', fontWeight: '700',
+  },
 });
