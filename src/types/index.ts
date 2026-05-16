@@ -37,6 +37,7 @@ export type CompletedQuest = {
   completedAt: string;   // ISO timestamp — for ordering
   completedDate: string; // local YYYY-MM-DD — for streak logic
   xpAwarded: number;
+  photoUri?: string;
 };
 
 export type MoodMeta = {

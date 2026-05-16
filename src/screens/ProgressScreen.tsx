@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  View, Text, FlatList, StyleSheet, TouchableOpacity,
+  View, Text, Image, FlatList, StyleSheet, TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -30,6 +30,9 @@ export function ProgressScreen({ navigation }: Props) {
     const quest = questById[item.questId];
     return (
       <View style={styles.historyItem}>
+        {item.photoUri && (
+          <Image source={{ uri: item.photoUri }} style={styles.historyThumb} />
+        )}
         <View style={styles.historyLeft}>
           <Text style={styles.historyTitle}>{quest?.title ?? item.questId}</Text>
           <Text style={styles.historyDate}>{item.completedDate}</Text>
@@ -150,7 +153,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'white', borderRadius: 12, padding: 12, marginHorizontal: 16,
     marginBottom: 8, elevation: 1,
   },
-  historyLeft: { gap: 2 },
+  historyThumb: { width: 48, height: 48, borderRadius: 8, marginRight: 4 },
+  historyLeft: { flex: 1, gap: 2 },
   historyTitle: { fontSize: 13, fontWeight: '700', color: '#1a1a1a' },
   historyDate: { fontSize: 11, color: '#aaa' },
   historyXp: { fontSize: 12, fontWeight: '700', color: '#FF8C42' },

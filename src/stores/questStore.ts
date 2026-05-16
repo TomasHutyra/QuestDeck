@@ -11,6 +11,7 @@ type QuestState = {
 
 type QuestActions = {
   addCompletedQuest: (cq: CompletedQuest) => void;
+  updateCompletedQuestPhoto: (questId: string, photoUri: string) => void;
   setActiveQuestId: (id: string | null) => void;
   setLastRevealedQuestIds: (ids: string[]) => void;
   clearLastRevealedQuestIds: () => void;
@@ -29,6 +30,12 @@ export const useQuestStore = create<QuestState & QuestActions>()(
       ...initialState,
       addCompletedQuest: (cq) =>
         set((s) => ({ completedQuests: [...s.completedQuests, cq] })),
+      updateCompletedQuestPhoto: (questId, photoUri) =>
+        set((s) => ({
+          completedQuests: s.completedQuests.map((cq) =>
+            cq.questId === questId ? { ...cq, photoUri } : cq
+          ),
+        })),
       setActiveQuestId: (id) => set({ activeQuestId: id }),
       setLastRevealedQuestIds: (ids) => set({ lastRevealedQuestIds: ids }),
       clearLastRevealedQuestIds: () => set({ lastRevealedQuestIds: [] }),

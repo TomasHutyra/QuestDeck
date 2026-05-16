@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View,
+  Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -10,6 +10,7 @@ import { useProgressStore } from '../stores/progressStore';
 import { useQuestStore } from '../stores/questStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { completeQuest } from '../actions/completeQuest';
+import { pickPhotoFromLibrary, takePhoto } from '../lib/photos';
 import {
   playAlreadyCompletedFeedback,
   playLevelUpFeedback,
@@ -46,7 +47,7 @@ function overlayTypeFor(
 
 export function CompletionScreen({ navigation, route }: Props) {
   const quest = questById[route.params.questId];
-  const { clearActiveAndRevealed } = useQuestStore();
+  const { clearActiveAndRevealed, updateCompletedQuestPhoto } = useQuestStore();
   const { totalXp, level, currentStreak } = useProgressStore();
   const {
     dailyReminderEnabled, setDailyReminderEnabled,
@@ -58,6 +59,7 @@ export function CompletionScreen({ navigation, route }: Props) {
   const [result, setResult] = useState<CompleteQuestResult | null>(null);
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [promptVisible, setPromptVisible] = useState(false);
+  const [photoUri, setPhotoUri] = useState<string | null>(null);
   const hasPlayedRef = useRef(false);
   const promptShownRef = useRef(false);
 
@@ -116,6 +118,36 @@ export function CompletionScreen({ navigation, route }: Props) {
   const handleMaybeLater = () => {
     recordNotificationPromptDismissed();
     setPromptVisible(false);
+  };
+
+  const handleAddPhoto = () => {
+    Alert.alert('Add a memory photo', undefined, [
+      {
+        text: 'Take a photo',
+        onPress: async () => {
+          const uri = await takePhoto();
+          if (uri && result) {
+            setPhotoUri(uri);
+            updateCompletedQuestPhoto(result.questId, uri);
+          } else if (uri === null) {
+            Alert.alert('Permission required', 'Enable camera access in your device settings.');
+          }
+        },
+      },
+      {
+        text: 'Choose from gallery',
+        onPress: async () => {
+          const uri = await pickPhotoFromLibrary();
+          if (uri && result) {
+            setPhotoUri(uri);
+            updateCompletedQuestPhoto(result.questId, uri);
+          } else if (uri === null) {
+            Alert.alert('Permission required', 'Enable photo library access in your device settings.');
+          }
+        },
+      },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
   };
 
   const handleBackToHome = () => {
@@ -198,6 +230,14 @@ export function CompletionScreen({ navigation, route }: Props) {
           />
         )}
 
+        {photoUri ? (
+          <Image source={{ uri: photoUri }} style={styles.photoThumb} />
+        ) : (
+          <TouchableOpacity style={styles.photoBtn} onPress={handleAddPhoto} activeOpacity={0.8}>
+            <Text style={styles.photoBtnText}>📷 Add a memory photo</Text>
+          </TouchableOpacity>
+        )}
+
         <TouchableOpacity style={styles.homeBtn} onPress={handleBackToHome} activeOpacity={0.85}>
           <Text style={styles.homeBtnText}>Back to Home</Text>
         </TouchableOpacity>
@@ -255,4 +295,12 @@ const styles = StyleSheet.create({
   alreadyIcon: { fontSize: 48 },
   alreadyTitle: { fontSize: 18, fontWeight: '800', color: '#1a1a1a' },
   alreadySubtitle: { fontSize: 13, color: '#aaa', textAlign: 'center' },
+  photoBtn: {
+    width: '100%', borderRadius: 14, paddingVertical: 14, alignItems: 'center',
+    borderWidth: 1.5, borderColor: '#FFD0A0', backgroundColor: '#FFF3E8',
+  },
+  photoBtnText: { fontSize: 14, fontWeight: '700', color: '#FF8C42' },
+  photoThumb: {
+    width: '100%', height: 180, borderRadius: 14, resizeMode: 'cover',
+  },
 });
