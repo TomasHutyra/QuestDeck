@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/RootStack';
 import { useSettingsStore } from '../stores/settingsStore';
+import { Decky } from '../components/Decky';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Onboarding'>;
 
@@ -52,6 +53,9 @@ export function OnboardingScreen({ navigation }: Props) {
       </View>
 
       <View style={styles.slide}>
+        <View style={styles.mascotRow}>
+          <Decky pose="wave" size={72} />
+        </View>
         <Text style={styles.emoji}>{slide.emoji}</Text>
         <Text style={styles.title}>{slide.title}</Text>
         <Text style={styles.body}>{slide.body}</Text>
@@ -80,6 +84,7 @@ const styles = StyleSheet.create({
     flex: 1, alignItems: 'center', justifyContent: 'center',
     paddingHorizontal: 40, gap: 16,
   },
+  mascotRow: { alignItems: 'center', marginBottom: 12 },
   emoji: { fontSize: 72 },
   title: { fontSize: 28, fontWeight: '900', color: '#1a1a1a', textAlign: 'center' },
   body: { fontSize: 16, color: '#666', textAlign: 'center', lineHeight: 24 },

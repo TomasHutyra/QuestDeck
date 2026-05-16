@@ -8,6 +8,7 @@ import { RootStackParamList } from '../navigation/RootStack';
 import { useProgressStore } from '../stores/progressStore';
 import { useQuestStore } from '../stores/questStore';
 import { questById } from '../data/quests';
+import { Decky } from '../components/Decky';
 import { LEVEL_LABELS, xpProgressInCurrentLevel } from '../lib/xp';
 import { CompletedQuest } from '../types';
 
@@ -87,7 +88,7 @@ export function ProgressScreen({ navigation }: Props) {
               <Text style={styles.sectionLabel}>RECENT QUESTS</Text>
             ) : (
               <View style={styles.emptyCard}>
-                <Text style={styles.emptyEmoji}>🗺️</Text>
+                <Decky pose="empty" size={64} />
                 <Text style={styles.emptyTitle}>No quests yet</Text>
                 <Text style={styles.emptyBody}>
                   Head back to the home screen, pick a mood, and complete your first quest. It will appear here.
@@ -142,7 +143,6 @@ const styles = StyleSheet.create({
     marginTop: 24, alignItems: 'center', padding: 24,
     backgroundColor: 'white', borderRadius: 16, gap: 8,
   },
-  emptyEmoji: { fontSize: 40 },
   emptyTitle: { fontSize: 16, fontWeight: '800', color: '#1a1a1a' },
   emptyBody: { fontSize: 13, color: '#aaa', textAlign: 'center', lineHeight: 20 },
   historyItem: {

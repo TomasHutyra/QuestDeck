@@ -30,6 +30,7 @@ import { todayLocalDate } from '../lib/xp';
 import { XPBar } from '../components/XPBar';
 import { CelebrationOverlay } from '../components/CelebrationOverlay';
 import { NotificationPromptCard } from '../components/NotificationPromptCard';
+import { Decky } from '../components/Decky';
 import { CompleteQuestResult } from '../types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Completion'>;
@@ -167,7 +168,7 @@ export function CompletionScreen({ navigation, route }: Props) {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.center} bounces={false}>
-        <Text style={styles.celebrationEmoji}>🎉</Text>
+        <Decky pose="celebrate" size={72} />
         <Text style={styles.completeTitle}>Quest Complete!</Text>
         <Text style={styles.questSubtitle}>{quest.title}</Text>
 
@@ -220,7 +221,6 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#FFF8F0' },
   error: { margin: 24, color: '#aaa' },
   center: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 12 },
-  celebrationEmoji: { fontSize: 56 },
   completeTitle: { fontSize: 22, fontWeight: '900', color: '#1a1a1a' },
   questTitle: { fontSize: 16, fontWeight: '700', color: '#1a1a1a' },
   questDesc: { fontSize: 13, color: '#888', textAlign: 'center' },
