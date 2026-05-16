@@ -9,11 +9,11 @@ type Props = {
 };
 
 const POSE_ASSET: Record<DeckyPose, ReturnType<typeof require>> = {
-  idle:      require('../../assets/decky/wave.png'),
+  idle:      require('../../assets/decky/idle.png'),
   wave:      require('../../assets/decky/wave.png'),
   celebrate: require('../../assets/decky/celebrate.png'),
   empty:     require('../../assets/decky/empty.png'),
-  streak:    require('../../assets/decky/celebrate.png'),
+  streak:    require('../../assets/decky/streak.png'),
 };
 
 export function Decky({ pose, size = 64 }: Props) {
