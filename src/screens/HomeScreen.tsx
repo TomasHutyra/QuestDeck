@@ -13,6 +13,7 @@ import { usePackStore } from '../stores/packStore';
 import { questSelector } from '../lib/questSelector';
 import { XPBar } from '../components/XPBar';
 import { MoodButton } from '../components/MoodButton';
+import { Decky } from '../components/Decky';
 import { MoodMeta } from '../types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
@@ -57,6 +58,12 @@ export function HomeScreen({ navigation }: Props) {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.grid}
         columnWrapperStyle={styles.row}
+        ListHeaderComponent={
+          <View style={styles.mascotHeader}>
+            <Decky pose="idle" size={72} />
+            <Text style={styles.moodPrompt}>How are you feeling?</Text>
+          </View>
+        }
         renderItem={({ item }) => (
           <View style={styles.cell}>
             <MoodButton mood={item} onPress={() => handleMoodPress(item)} />
@@ -80,6 +87,8 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', elevation: 2,
   },
   iconEmoji: { fontSize: 16 },
+  mascotHeader: { alignItems: 'center', paddingTop: 8, paddingBottom: 4, gap: 8 },
+  moodPrompt: { fontSize: 15, fontWeight: '700', color: '#1a1a1a', marginBottom: 4 },
   grid: { padding: 12 },
   row: { gap: 10, marginBottom: 10 },
   cell: { flex: 1 },

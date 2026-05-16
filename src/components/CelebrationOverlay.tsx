@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 import { useSettingsStore } from '../stores/settingsStore';
 import { Confetti } from './Confetti';
+import { Decky } from './Decky';
 
 type CelebrationOverlayProps = {
   type: 'quest-complete' | 'streak' | 'level-up';
@@ -109,7 +110,7 @@ export function CelebrationOverlay({
 
       {type === 'streak' && (
         <Animated.View style={[styles.badge, styles.streakBadge, { opacity, transform: [{ scale }] }]}>
-          <Text style={styles.largeEmoji}>🔥</Text>
+          <Decky pose="streak" size={72} />
           <Text style={styles.streakText}>{newStreak}-day streak!</Text>
           <Text style={styles.streakSub}>Keep it going</Text>
         </Animated.View>
@@ -141,7 +142,6 @@ const styles = StyleSheet.create({
   levelUpBadge: { paddingVertical: 28, paddingHorizontal: 44 },
   badgeLabel: { fontSize: 11, color: '#aaa' },
   xpText: { fontSize: 40, fontWeight: '900', color: '#FF8C42' },
-  largeEmoji: { fontSize: 48 },
   streakText: { fontSize: 22, fontWeight: '800', color: '#1a1a1a' },
   streakSub: { fontSize: 12, color: '#aaa' },
   levelUpEmoji: { fontSize: 52 },
