@@ -31,6 +31,9 @@ export function QuestCard({ quest, isRevealed, onPress }: Props) {
               </View>
               <Text style={styles.xp}>⭐ {quest.xp} XP</Text>
             </View>
+            <View style={styles.ctaRow}>
+              <Text style={styles.ctaText}>Choose this quest →</Text>
+            </View>
           </View>
         ) : (
           <View style={styles.faceDownContent}>
@@ -57,8 +60,8 @@ const styles = StyleSheet.create({
   },
   revealed: {
     backgroundColor: '#FFF3E8',
-    borderWidth: 1.5,
-    borderColor: '#FFD0A0',
+    borderWidth: 2,
+    borderColor: '#FF8C42',
   },
   faceDownContent: { alignItems: 'center' },
   cardIcon: { fontSize: 28 },
@@ -70,4 +73,12 @@ const styles = StyleSheet.create({
   badge: { backgroundColor: '#FF8C42', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2 },
   badgeText: { color: 'white', fontSize: 10, fontWeight: '700' },
   xp: { fontSize: 11, color: '#aaa' },
+  ctaRow: {
+    alignItems: 'flex-end',
+    marginTop: 6,
+    paddingTop: 6,
+    borderTopWidth: 1,
+    borderTopColor: '#FFD0A0',
+  },
+  ctaText: { fontSize: 12, fontWeight: '800', color: '#FF8C42' },
 });

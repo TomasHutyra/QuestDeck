@@ -82,8 +82,11 @@ export function QuestRevealScreen({ navigation, route }: Props) {
         <View>
           <Text style={styles.moodLabel}>{mood}</Text>
           <Text style={styles.hint}>
-            {revealedIndexes.length < quests.length ? 'Tap a card to reveal' : 'Tap a card to choose'}
+            {revealedIndexes.length === 0 ? 'Tap a card to reveal' : 'Choose one quest'}
           </Text>
+          {revealedIndexes.length > 0 && (
+            <Text style={styles.helperText}>Tap a revealed card to continue</Text>
+          )}
         </View>
       </View>
 
@@ -125,4 +128,5 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   drawAgainText: { fontSize: 13, fontWeight: '700', color: '#FF8C42' },
+  helperText: { fontSize: 10, color: '#FF8C42', marginTop: 1 },
 });
