@@ -19,7 +19,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 export function HomeScreen({ navigation }: Props) {
   const { completedQuests, setLastRevealedQuestIds } = useQuestStore();
-  const { totalXp, level } = useProgressStore();
+  const { totalXp, level, currentStreak } = useProgressStore();
   const { unlockedPackIds } = usePackStore();
 
   const handleMoodPress = (mood: MoodMeta) => {
@@ -49,7 +49,7 @@ export function HomeScreen({ navigation }: Props) {
         </View>
       </View>
 
-      <XPBar level={level} totalXp={totalXp} />
+      <XPBar level={level} totalXp={totalXp} currentStreak={currentStreak} />
 
       <FlatList
         data={MOODS}
