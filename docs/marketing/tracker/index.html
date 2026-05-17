@@ -325,7 +325,248 @@
 
 <script src="utils.js"></script>
 <script>
-  // Task data and app logic added in subsequent tasks
+const TASK_DATA = [
+  {
+    weekNum: 0, label: 'Week 0 — May 18–24', subtitle: 'Store, App & Infrastructure Preparation',
+    days: [
+      { date: '2026-05-18', dayLabel: 'Mon May 18', tasks: [
+        { id: 'w0-mon-0', text: 'Check production access: confirm whether production track is available in Play Console. If not, identify requirements (closed testing 12+ testers, 14+ days).' }
+      ]},
+      { date: '2026-05-19', dayLabel: 'Tue May 19', tasks: [
+        { id: 'w0-tue-0', text: 'Audit store listing: title, description, screenshots, icon, content rating. List everything missing or unfinished.' }
+      ]},
+      { date: '2026-05-20', dayLabel: 'Wed May 20', tasks: [
+        { id: 'w0-wed-0', text: 'Write final store description with summer keywords: things to do, bored, weekend ideas, activity ideas, couple activities, offline, no account.' }
+      ]},
+      { date: '2026-05-21', dayLabel: 'Thu May 21', tasks: [
+        { id: 'w0-thu-0', text: 'Create 6 screenshots in Canva with text overlays: "Pick your mood" / "Draw 3 quest cards" / "Tap to reveal" / "Choose your quest" / "Mark it done. Earn XP." / "Track your adventures"' }
+      ]},
+      { date: '2026-05-22', dayLabel: 'Fri May 22', tasks: [
+        { id: 'w0-fri-0', text: 'Complete Data Safety form in Play Console. Publish privacy policy and link it in the store listing.' }
+      ]},
+      { date: '2026-05-23', dayLabel: 'Sat May 23', tasks: [
+        { id: 'w0-sat-0', text: 'Create TikTok account. Set bio: "Real-life quest cards for bored moments 📲 Pre-register below". Film first screen recording.' }
+      ]},
+      { date: '2026-05-24', dayLabel: 'Sun May 24', tasks: [
+        { id: 'w0-sun-0', text: 'Edit first TikTok in CapCut: add captions, pick trending audio. Save as draft. Write list of 20+ people for personal outreach.' }
+      ]},
+    ]
+  },
+  {
+    weekNum: 1, label: 'Week 1 — May 25–31', subtitle: 'Final Prep (No Pre-Registration Yet)',
+    days: [
+      { date: '2026-05-25', dayLabel: 'Mon May 25', tasks: [
+        { id: 'w1-mon-0', text: 'Final quest quality check: open every mood, read every quest. All 8 moods must have quests. Remove weak or repetitive ones.' }
+      ]},
+      { date: '2026-05-26', dayLabel: 'Tue May 26', tasks: [
+        { id: 'w1-tue-0', text: 'Test app fully offline after first install: uninstall, reinstall without internet, verify all quests load.' }
+      ]},
+      { date: '2026-05-27', dayLabel: 'Wed May 27', tasks: [
+        { id: 'w1-wed-0', text: 'Test notification permission request: does the copy feel natural? Test photo memory permission if included.' }
+      ]},
+      { date: '2026-05-28', dayLabel: 'Thu May 28', tasks: [
+        { id: 'w1-thu-0', text: 'Final store listing review. Confirm screenshots, icon, and description are all final.' }
+      ]},
+      { date: '2026-05-29', dayLabel: 'Fri May 29', tasks: [
+        { id: 'w1-fri-0', text: 'Prepare pre-registration setup steps for Monday (Play Console → Release → Pre-registration). Do not enable yet — wait for June 1.' }
+      ]},
+      { date: '2026-05-30', dayLabel: 'Sat May 30', tasks: [
+        { id: 'w1-sat-0', text: 'Film TikTok videos #2 and #3 in one session. Draft #2 now, keep #3 for editing next week.' }
+      ]},
+      { date: '2026-05-31', dayLabel: 'Sun May 31', tasks: [
+        { id: 'w1-sun-0', text: 'Set up launch tracking spreadsheet: date, pre-reg count, TikTok views, Reddit comments, outreach sent, testing issues. Final personal outreach list review.' }
+      ]},
+    ]
+  },
+  {
+    weekNum: 2, label: 'Week 2 — Jun 1–7', subtitle: 'Pre-Registration Live (Week 1)',
+    days: [
+      { date: '2026-06-01', dayLabel: 'Mon Jun 1', tasks: [
+        { id: 'w2-mon-0', text: 'Enable Google Play pre-registration. Verify "Pre-register" button appears in the Play Store. Update TikTok bio with pre-registration link.' }
+      ]},
+      { date: '2026-06-02', dayLabel: 'Tue Jun 2', tasks: [
+        { id: 'w2-tue-0', text: 'Post TikTok video #1: quest reveal with overlay "Coming this summer — pre-register in bio".' }
+      ]},
+      { date: '2026-06-03', dayLabel: 'Wed Jun 3', tasks: [
+        { id: 'w2-wed-0', text: 'Personal outreach batch 1: send to 10 people. "I\'m almost done with a real-life quest app. Would you pre-register? You\'ll get an automatic notification when it\'s live."' }
+      ]},
+      { date: '2026-06-04', dayLabel: 'Thu Jun 4', tasks: [
+        { id: 'w2-thu-0', text: 'Post in r/SideProject: "I\'m building an offline quest card app for bored moments. Pre-registration is open. What would your first quest be?"' }
+      ]},
+      { date: '2026-06-05', dayLabel: 'Fri Jun 5', tasks: [
+        { id: 'w2-fri-0', text: 'Review pre-registration count and testing feedback. Log both in dashboard.' }
+      ]},
+      { date: '2026-06-06', dayLabel: 'Sat Jun 6', tasks: [
+        { id: 'w2-sat-0', text: 'Film TikTok videos #4 and #5. Summer boredom angle.' }
+      ]},
+    ]
+  },
+  {
+    weekNum: 3, label: 'Week 3 — Jun 8–14', subtitle: 'Pre-Registration Active (Week 2)',
+    days: [
+      { date: '2026-06-08', dayLabel: 'Mon Jun 8', tasks: [
+        { id: 'w3-mon-0', text: 'Post TikTok #2: summer quest reveal. CTA: "Would you do this quest?"' }
+      ]},
+      { date: '2026-06-09', dayLabel: 'Tue Jun 9', tasks: [
+        { id: 'w3-tue-0', text: 'Personal outreach batch 2: 5–10 more people.' }
+      ]},
+      { date: '2026-06-10', dayLabel: 'Wed Jun 10', tasks: [
+        { id: 'w3-wed-0', text: 'App testing: test on a different Android version or screen size if possible. Fix any issues.' }
+      ]},
+      { date: '2026-06-11', dayLabel: 'Thu Jun 11', tasks: [
+        { id: 'w3-thu-0', text: 'Post in local city subreddit: "I built a free app that gives real-life quest ideas. Here\'s one: [quote a city quest]. Would you try this?"' }
+      ]},
+      { date: '2026-06-12', dayLabel: 'Fri Jun 12', tasks: [
+        { id: 'w3-fri-0', text: 'Review pre-registration count. If under 20, double personal outreach next week. Log testing feedback.' }
+      ]},
+      { date: '2026-06-13', dayLabel: 'Sat Jun 13', tasks: [
+        { id: 'w3-sat-0', text: 'Content batch: film 2 videos, create 5 Canva posts. Theme: couples and friends doing summer quests.' }
+      ]},
+    ]
+  },
+  {
+    weekNum: 4, label: 'Week 4 — Jun 15–21', subtitle: 'Pre-Registration Active (Week 3) + Release Candidate',
+    days: [
+      { date: '2026-06-15', dayLabel: 'Mon Jun 15', tasks: [
+        { id: 'w4-mon-0', text: 'Post TikTok #3: couples angle — "out of ideas for the weekend? draw a quest together"' }
+      ]},
+      { date: '2026-06-16', dayLabel: 'Tue Jun 16', tasks: [
+        { id: 'w4-tue-0', text: 'Full regression test: all 8 moods, completion flow, streak reminder, photo memory, XP screen.' }
+      ]},
+      { date: '2026-06-17', dayLabel: 'Wed Jun 17', tasks: [
+        { id: 'w4-wed-0', text: 'Personal outreach batch 3: 5–10 people.' }
+      ]},
+      { date: '2026-06-18', dayLabel: 'Thu Jun 18', tasks: [
+        { id: 'w4-thu-0', text: 'Pack research: post on TikTok or Reddit — "If a themed quest pack existed, which would you want: Couples / City Explorer / Friends / Cozy Home?"' }
+      ]},
+      { date: '2026-06-19', dayLabel: 'Fri Jun 19', tasks: [
+        { id: 'w4-fri-0', text: 'Release candidate decision: app stable? All quests polished? Store listing final? If yes: mark as RC. If no: list what is missing and schedule fixes.' }
+      ]},
+      { date: '2026-06-20', dayLabel: 'Sat Jun 20', tasks: [
+        { id: 'w4-sat-0', text: 'Post TikTok #4. Update outreach tracking: how many pre-registered out of total outreach sent?' }
+      ]},
+    ]
+  },
+  {
+    weekNum: 5, label: 'Week 5 — Jun 22–28', subtitle: 'Go / No-Go for June 25',
+    days: [
+      { date: '2026-06-22', dayLabel: 'Mon Jun 22', tasks: [
+        { id: 'w5-mon-0', text: 'Make go/no-go decision for June 25. If going: confirm Day 1 testers, draft all launch day posts. If not going: note what is missing.' }
+      ]},
+      { date: '2026-06-23', dayLabel: 'Tue Jun 23', tasks: [
+        { id: 'w5-tue-0', text: 'If launching Thu: brief Day 1 people — "Install Thursday, use the app, leave an honest review if you genuinely find it useful." Prepare Reddit launch post. Prepare TikTok launch video.' }
+      ]},
+      { date: '2026-06-24', dayLabel: 'Wed Jun 24', tasks: [
+        { id: 'w5-wed-0', text: 'If launching Thu: final build check, final store listing review, confirm Managed Publishing is set up correctly.' }
+      ]},
+      { date: '2026-06-25', dayLabel: 'Thu Jun 25', tasks: [
+        { id: 'w5-thu-0', text: '⚡ EARLIEST RELEASE — Jun 25. If launching: publish via Managed Publishing. Message all internal/closed testers manually (they will not receive the automatic pre-registration notification). Post r/androidapps. Post TikTok launch video. Reply to everything.' }
+      ]},
+      { date: '2026-06-26', dayLabel: 'Fri Jun 26', tasks: [
+        { id: 'w5-fri-0', text: 'If launched: reply to all reviews and comments. Log Day 1 metrics. If not launched: continue pre-registration campaign.' }
+      ]},
+      { date: '2026-06-27', dayLabel: 'Sat Jun 27', tasks: [
+        { id: 'w5-sat-0', text: 'Content batch for July launch push. Create "launching soon" style content.' }
+      ]},
+    ]
+  },
+  {
+    weekNum: 6, label: 'Week 6 — Jun 29–Jul 5', subtitle: 'Production Review Submission + Final Push',
+    days: [
+      { date: '2026-06-29', dayLabel: 'Mon Jun 29', tasks: [
+        { id: 'w6-mon-0', text: 'Final app build for production. Confirm Managed Publishing is enabled in Play Console.' }
+      ]},
+      { date: '2026-06-30', dayLabel: 'Tue Jun 30', tasks: [
+        { id: 'w6-tue-0', text: 'Submit production release for Google Play review. 9-day review buffer before July 9. With Managed Publishing enabled, approval does not trigger automatic release.' }
+      ]},
+      { date: '2026-07-01', dayLabel: 'Wed Jul 1', tasks: [
+        { id: 'w6-wed-0', text: 'Post TikTok #5: "launching this week" or summer boredom angle.' }
+      ]},
+      { date: '2026-07-02', dayLabel: 'Thu Jul 2', tasks: [
+        { id: 'w6-thu-0', text: 'Personal outreach batch 5: final round of personal invites. Ask specifically to install around July 9.' }
+      ]},
+      { date: '2026-07-03', dayLabel: 'Fri Jul 3', tasks: [
+        { id: 'w6-fri-0', text: 'Skip major posts — July 4 weekend, reduced USA engagement. Check Play Console for review status.' }
+      ]},
+      { date: '2026-07-04', dayLabel: 'Sat Jul 4', tasks: [
+        { id: 'w6-sat-0', text: 'July 4th holiday (USA). No posts. Rest.' }
+      ]},
+      { date: '2026-07-05', dayLabel: 'Sun Jul 5', tasks: [
+        { id: 'w6-sun-0', text: 'Check if production release is approved. If approved: it is waiting in Managed Publishing. Do not publish yet.' }
+      ]},
+    ]
+  },
+  {
+    weekNum: 7, label: 'Week 7 — Jul 6–12', subtitle: 'Launch Week (Realistic Release July 9)',
+    days: [
+      { date: '2026-07-06', dayLabel: 'Mon Jul 6', tasks: [
+        { id: 'w7-mon-0', text: 'Confirm July 9 launch. Verify production release is approved in Play Console. Confirm Day 1 people are ready. Draft all launch day posts if not done.' }
+      ]},
+      { date: '2026-07-07', dayLabel: 'Tue Jul 7', tasks: [
+        { id: 'w7-tue-0', text: 'Final pre-launch checks. Prepare list of all internal/closed testers to message manually on Thursday.' }
+      ]},
+      { date: '2026-07-08', dayLabel: 'Wed Jul 8', tasks: [
+        { id: 'w7-wed-0', text: 'Post TikTok: "Launching tomorrow 🗓 Real-life quest cards for bored summer days — pre-register link in bio." Reply to any comments.' }
+      ]},
+      { date: '2026-07-09', dayLabel: 'Thu Jul 9', tasks: [
+        { id: 'w7-thu-0', text: '✅ LAUNCH DAY — Morning: Manually publish via Managed Publishing in Play Console.' },
+        { id: 'w7-thu-1', text: '✅ LAUNCH DAY — Morning: Manually message all internal/closed testers (they will NOT receive the automatic pre-registration notification).' },
+        { id: 'w7-thu-2', text: '✅ LAUNCH DAY — Morning: Message Day 1 people: "It\'s live! Use it for a few days, and if you genuinely find it useful an honest review helps a lot." (staggered, not all at once)' },
+        { id: 'w7-thu-3', text: '✅ LAUNCH DAY — Afternoon: Post on r/androidapps: "I launched this — real-life quest cards for bored moments. Here\'s what it does: [description + link]"' },
+        { id: 'w7-thu-4', text: '✅ LAUNCH DAY — Afternoon: Post TikTok launch video.' },
+        { id: 'w7-thu-5', text: '✅ LAUNCH DAY — Evening: Reply to every comment, review, and message.' },
+      ]},
+      { date: '2026-07-10', dayLabel: 'Fri Jul 10', tasks: [
+        { id: 'w7-fri-0', text: 'Monitor reviews. Reply to all. Check pre-registration conversion rate in Play Console. Log Day 1 metrics in dashboard.' }
+      ]},
+      { date: '2026-07-11', dayLabel: 'Sat Jul 11', tasks: [
+        { id: 'w7-sat-0', text: 'Post TikTok: "It\'s live — here\'s a quest for your weekend."' }
+      ]},
+      { date: '2026-07-12', dayLabel: 'Sun Jul 12', tasks: [
+        { id: 'w7-sun-0', text: 'Reply to any reviews or comments. Review first-week metrics. Start pack demand tally.' }
+      ]},
+    ]
+  },
+  {
+    weekNum: 8, label: 'Week 8 — Jul 13–16', subtitle: 'Backup Release (if July 9 slipped)',
+    days: [
+      { date: '2026-07-13', dayLabel: 'Mon Jul 13', tasks: [
+        { id: 'w8-mon-0', text: 'Backup go/no-go decision for July 16. If July 9 did not happen: confirm what was blocking and whether it is resolved.' }
+      ]},
+      { date: '2026-07-14', dayLabel: 'Tue Jul 14', tasks: [
+        { id: 'w8-tue-0', text: 'Repeat launch prep from July 7–8. Re-confirm Day 1 people.' }
+      ]},
+      { date: '2026-07-15', dayLabel: 'Wed Jul 15', tasks: [
+        { id: 'w8-wed-0', text: 'Final pre-launch TikTok: "Launching tomorrow."' }
+      ]},
+      { date: '2026-07-16', dayLabel: 'Thu Jul 16', tasks: [
+        { id: 'w8-thu-0', text: '🔁 BACKUP RELEASE — July 16. Same launch day plan as July 9.' }
+      ]},
+    ]
+  },
+  {
+    weekNum: 9, label: 'Post-Launch: Weeks 9+', subtitle: 'Phase 1 — Grow Downloads',
+    days: [
+      { date: null, dayLabel: 'Monday (recurring)', tasks: [
+        { id: 'w9-mon-0', text: 'Choose 5 quests, create Canva posts.' }
+      ]},
+      { date: null, dayLabel: 'Tuesday (recurring)', tasks: [
+        { id: 'w9-tue-0', text: '5–10 personal outreach messages.' }
+      ]},
+      { date: null, dayLabel: 'Wednesday (recurring)', tasks: [
+        { id: 'w9-wed-0', text: 'Post 1 TikTok.' }
+      ]},
+      { date: null, dayLabel: 'Thursday (recurring)', tasks: [
+        { id: 'w9-thu-0', text: 'Post 1 Reddit question only if there is a relevant subreddit not already used. Otherwise reply to existing discussions, collect feedback, or post an extra TikTok / Short.' }
+      ]},
+      { date: null, dayLabel: 'Friday (recurring)', tasks: [
+        { id: 'w9-fri-0', text: 'Review feedback, update quest copy or store listing if needed.' }
+      ]},
+    ]
+  },
+];
+
+// App logic added in subsequent tasks
 </script>
 </body>
 </html>
