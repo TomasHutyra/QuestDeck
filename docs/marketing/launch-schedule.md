@@ -48,6 +48,9 @@ Summer is not a disadvantage. It is the natural context for this app.
 **Important — Managed Publishing:**
 Enable Managed Publishing before submitting the production release. This means Google can approve the build without it going live automatically. You then manually press "Publish" on July 9 (or June 25 if going early). Submit for review by June 30 to allow enough buffer before July 9.
 
+**Important — June 25 earliest release:**
+June 25 is only possible if the production release is submitted for Google review by June 16–18 and approved by the June 22 go/no-go decision. Otherwise June 25 should be treated as a stretch date only, and July 9 remains the primary target.
+
 **Important — Pre-registration and testers:**
 Users who already have a test version installed (internal / closed testing) may not receive the Google Play pre-registration notification when the app goes live. On launch day, all internal and closed testers must be messaged manually.
 
@@ -81,6 +84,16 @@ Do not post in r/androidapps and r/SideProject in the same week or for the same 
 
 ## Daily Recurring Routine (30 min/day)
 
+**Before June 1 (no pre-registration yet):**
+
+| Time | Task |
+|------|------|
+| 5 min | Check launch prep checklist — note what is done and what is outstanding |
+| 5 min | Reply to any TikTok / Reddit comments from previous day |
+| 20 min | One content task from the weekly schedule below |
+
+**From June 1 (pre-registration live):**
+
 | Time | Task |
 |------|------|
 | 5 min | Check Google Play pre-registration count, note in dashboard |
@@ -103,7 +116,7 @@ No marketing activity this week — only setup.
 | **Mon May 18** | **Check production access:** In Play Console, confirm whether production track access is already available. If not, identify what is required (e.g. closed testing with 12+ testers for 14+ days). Note any blockers. |
 | **Tue May 19** | Audit store listing: title, description, screenshots, icon, content rating. List everything missing or unfinished. |
 | **Wed May 20** | Write final store description with summer keywords: things to do, bored, weekend ideas, activity ideas, couple activities, offline, no account. |
-| **Thu May 21** | Create 4 screenshots in Canva with text overlays: "No account needed" / "Works offline" / "For bored moments" / "Pick a mood. Draw a quest." |
+| **Thu May 21** | Create 6 screenshots in Canva with text overlays: "Pick your mood" / "Draw 3 quest cards" / "Tap to reveal" / "Choose your quest" / "Mark it done. Earn XP." / "Track your adventures" |
 | **Fri May 22** | Complete Data Safety form in Play Console. Publish privacy policy and link it in the store listing. |
 | **Sat May 23** | Create TikTok account. Set bio: "Real-life quest cards for bored moments 📲 Pre-register below". Film first screen recording. |
 | **Sun May 24** | Edit first TikTok in CapCut: add captions, pick trending audio. Save as draft. Write list of 20+ people for personal outreach. |
@@ -204,7 +217,7 @@ Enable Managed Publishing before submitting. Target approval before July 7.
 | Day | Task |
 |-----|------|
 | **Mon Jun 29** | Final app build for production. Confirm Managed Publishing is enabled in Play Console. |
-| **Tue Jun 30** | **Submit production release for Google Play review.** This starts the review clock. Expected approval: 1–5 days. With Managed Publishing enabled, approval does not trigger automatic release. |
+| **Tue Jun 30** | **Submit production release for Google Play review.** This starts the review clock. Submit by June 30 to create a 9-day review buffer before July 9. Review time can vary. With Managed Publishing enabled, approval does not trigger automatic release. |
 | **Wed Jul 1** | Post TikTok #5: "launching this week" or summer boredom angle. |
 | **Thu Jul 2** | Personal outreach batch 5: final round of personal invites. Ask specifically to install around July 9. |
 | **Fri Jul 3** | Skip major posts — July 4 is Saturday, reduced USA engagement Fri–Sun. Admin: check Play Console for review status. |
@@ -257,7 +270,7 @@ Once live, switch to the Phase 1 weekly routine.
 | Monday | Choose 5 quests, create Canva posts |
 | Tuesday | 5–10 personal outreach messages |
 | Wednesday | Post 1 TikTok |
-| Thursday | Post 1 Reddit question (use subreddits not yet posted in) |
+| Thursday | Post 1 Reddit question only if there is a relevant subreddit not already used. Otherwise reply to existing discussions, collect feedback, or post an extra TikTok / Short. |
 | Friday | Review feedback, update quest copy or store listing if needed |
 
 **By end of July:** Check pack demand tally. If 3+ people have named the same pack theme, start planning pack content.
