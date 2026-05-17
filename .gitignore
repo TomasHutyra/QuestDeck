@@ -41,3 +41,6 @@ yarn-error.*
 /android
 
 .superpowers/
+
+# Launch tracker data (personal daily state, not source code)
+docs/marketing/tracker/tracker-data.json
