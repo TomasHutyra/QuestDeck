@@ -793,7 +793,45 @@ function updateBadges() {
   }
 }
 
-window.addEventListener('load', () => {
+// ── State persistence ──────────────────────────────────────────
+
+async function loadState() {
+  try {
+    const res = await fetch('/data');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    state = await res.json();
+  } catch (e) {
+    console.warn('Could not load state:', e.message);
+  }
+}
+
+let _saveTimer = null;
+function saveState() {
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(async () => {
+    try {
+      await fetch('/data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(state)
+      });
+    } catch (e) {
+      console.warn('Could not save state:', e.message);
+    }
+  }, 300);
+}
+
+// ── Interactions ───────────────────────────────────────────────
+
+function onTaskChange(id, checked) {
+  if (checked) state.tasks[id] = true;
+  else delete state.tasks[id];
+  saveState();
+  updateBadges();
+}
+
+window.addEventListener('load', async () => {
+  await loadState();
   renderWeeks();
 });
 </script>
