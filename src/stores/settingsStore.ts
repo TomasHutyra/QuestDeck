@@ -12,6 +12,12 @@ type SettingsState = {
   notificationPromptDismissCount: number;
   notificationPromptDismissedAt: string | null; // YYYY-MM-DD of last "Maybe later"
   notificationPromptLastShownAt: string | null;  // YYYY-MM-DD of last show (dismiss or ignore)
+  // Store review prompt — local dates unless noted
+  storeReviewPromptLastShownAt: string | null;              // YYYY-MM-DD of last show (dismiss or ignore)
+  storeReviewPromptDismissedAt: string | null;              // YYYY-MM-DD of last "Maybe later"
+  storeReviewPromptDismissCount: number;
+  storeReviewRequestedAt: string | null;                    // ISO timestamp when user tapped "Rate QuestDeck"
+  storeReviewCompletedQuestCountAtLastPrompt: number | null; // total completed quests when prompt last shown
 };
 
 type SettingsActions = {
@@ -24,6 +30,11 @@ type SettingsActions = {
   setNotificationPromptDismissCount: (v: number) => void;
   setNotificationPromptDismissedAt: (v: string | null) => void;
   setNotificationPromptLastShownAt: (v: string | null) => void;
+  setStoreReviewPromptLastShownAt: (v: string | null) => void;
+  setStoreReviewPromptDismissedAt: (v: string | null) => void;
+  setStoreReviewPromptDismissCount: (v: number) => void;
+  setStoreReviewRequestedAt: (v: string | null) => void;
+  setStoreReviewCompletedQuestCountAtLastPrompt: (v: number | null) => void;
 };
 
 const initialState: SettingsState = {
@@ -36,6 +47,11 @@ const initialState: SettingsState = {
   notificationPromptDismissCount: 0,
   notificationPromptDismissedAt: null,
   notificationPromptLastShownAt: null,
+  storeReviewPromptLastShownAt: null,
+  storeReviewPromptDismissedAt: null,
+  storeReviewPromptDismissCount: 0,
+  storeReviewRequestedAt: null,
+  storeReviewCompletedQuestCountAtLastPrompt: null,
 };
 
 export const useSettingsStore = create<SettingsState & SettingsActions>()(
@@ -51,6 +67,11 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       setNotificationPromptDismissCount: (v) => set({ notificationPromptDismissCount: v }),
       setNotificationPromptDismissedAt: (v) => set({ notificationPromptDismissedAt: v }),
       setNotificationPromptLastShownAt: (v) => set({ notificationPromptLastShownAt: v }),
+      setStoreReviewPromptLastShownAt: (v) => set({ storeReviewPromptLastShownAt: v }),
+      setStoreReviewPromptDismissedAt: (v) => set({ storeReviewPromptDismissedAt: v }),
+      setStoreReviewPromptDismissCount: (v) => set({ storeReviewPromptDismissCount: v }),
+      setStoreReviewRequestedAt: (v) => set({ storeReviewRequestedAt: v }),
+      setStoreReviewCompletedQuestCountAtLastPrompt: (v) => set({ storeReviewCompletedQuestCountAtLastPrompt: v }),
     }),
     {
       name: STORAGE_KEYS.SETTINGS,

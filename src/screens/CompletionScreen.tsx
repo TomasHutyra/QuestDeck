@@ -27,10 +27,18 @@ import {
   recordNotificationPromptDismissed,
   recordNotificationPromptAccepted,
 } from '../lib/notificationPrompt';
+import {
+  shouldShowStoreReviewPrompt,
+  recordStoreReviewPromptShown,
+  recordStoreReviewPromptDismissed,
+  recordStoreReviewRequested,
+  openGooglePlayListing,
+} from '../lib/storeReviewPrompt';
 import { todayLocalDate } from '../lib/xp';
 import { XPBar } from '../components/XPBar';
 import { CelebrationOverlay } from '../components/CelebrationOverlay';
 import { NotificationPromptCard } from '../components/NotificationPromptCard';
+import { StoreReviewPromptCard } from '../components/StoreReviewPromptCard';
 import { Decky } from '../components/Decky';
 import { CompleteQuestResult } from '../types';
 
@@ -47,32 +55,59 @@ function overlayTypeFor(
 
 export function CompletionScreen({ navigation, route }: Props) {
   const quest = questById[route.params.questId];
-  const { clearActiveAndRevealed, updateCompletedQuestPhoto } = useQuestStore();
+  const { clearActiveAndRevealed, updateCompletedQuestPhoto, completedQuests } = useQuestStore();
   const { totalXp, level, currentStreak } = useProgressStore();
   const {
     dailyReminderEnabled, setDailyReminderEnabled,
     notificationPromptDismissCount,
     notificationPromptDismissedAt,
     notificationPromptLastShownAt,
+    storeReviewPromptLastShownAt,
+    storeReviewPromptDismissedAt,
+    storeReviewPromptDismissCount,
+    storeReviewRequestedAt,
+    storeReviewCompletedQuestCountAtLastPrompt,
   } = useSettingsStore();
 
   const [result, setResult] = useState<CompleteQuestResult | null>(null);
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [promptVisible, setPromptVisible] = useState(false);
+  const [reviewPromptVisible, setReviewPromptVisible] = useState(false);
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const hasPlayedRef = useRef(false);
   const promptShownRef = useRef(false);
+  const reviewPromptShownRef = useRef(false);
 
   useEffect(() => {
-    if (result !== null && result.status !== 'already_completed' && !promptShownRef.current) {
-      const show = shouldShowNotificationPrompt(
+    if (result === null || result.status === 'already_completed') return;
+
+    const today = todayLocalDate();
+
+    // Notification prompt takes priority — only one prompt shown per completion
+    if (!promptShownRef.current) {
+      const showNotif = shouldShowNotificationPrompt(
         { dailyReminderEnabled, notificationPromptDismissCount, notificationPromptDismissedAt, notificationPromptLastShownAt },
-        todayLocalDate(),
+        today,
       );
-      if (show) {
+      if (showNotif) {
         promptShownRef.current = true;
         setPromptVisible(true);
         recordNotificationPromptShown();
+        return;
+      }
+    }
+
+    // Store review prompt second — skipped if notification prompt is showing
+    if (!reviewPromptShownRef.current && !promptShownRef.current) {
+      const showReview = shouldShowStoreReviewPrompt(
+        { storeReviewPromptLastShownAt, storeReviewPromptDismissedAt, storeReviewPromptDismissCount, storeReviewRequestedAt, storeReviewCompletedQuestCountAtLastPrompt },
+        today,
+        completedQuests.length,
+      );
+      if (showReview) {
+        reviewPromptShownRef.current = true;
+        setReviewPromptVisible(true);
+        recordStoreReviewPromptShown(completedQuests.length);
       }
     }
   }, [result]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -118,6 +153,19 @@ export function CompletionScreen({ navigation, route }: Props) {
   const handleMaybeLater = () => {
     recordNotificationPromptDismissed();
     setPromptVisible(false);
+  };
+
+  const handleRateApp = async () => {
+    const opened = await openGooglePlayListing();
+    if (opened) {
+      recordStoreReviewRequested();
+      setReviewPromptVisible(false);
+    }
+  };
+
+  const handleReviewMaybeLater = () => {
+    recordStoreReviewPromptDismissed();
+    setReviewPromptVisible(false);
   };
 
   const handleAddPhoto = () => {
@@ -227,6 +275,13 @@ export function CompletionScreen({ navigation, route }: Props) {
           <NotificationPromptCard
             onRemindMe={handleRemindMe}
             onMaybeLater={handleMaybeLater}
+          />
+        )}
+
+        {reviewPromptVisible && (
+          <StoreReviewPromptCard
+            onRate={handleRateApp}
+            onMaybeLater={handleReviewMaybeLater}
           />
         )}
 
