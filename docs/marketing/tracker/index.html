@@ -125,7 +125,7 @@
       border: 1px solid var(--border);
     }
     .week-current { border-color: var(--accent); border-width: 2px; }
-    .week-future { opacity: 0.45; pointer-events: none; }
+    .week-future { opacity: 0.65; }
 
     .week-header {
       display: flex;
@@ -137,7 +137,22 @@
       background: rgba(212,196,160,0.15);
     }
     .week-current .week-header { background: var(--accent); color: #f5f0e8; }
-    .week-future .week-header { background: rgba(212,196,160,0.1); cursor: default; }
+    .week-future .week-header { background: rgba(212,196,160,0.1); }
+
+    .week-body-locked { pointer-events: none; opacity: 0.6; }
+    .unlock-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 16px; border-bottom: 1px solid var(--border);
+      background: rgba(212,196,160,0.12); font-size: 13px; color: var(--muted);
+      font-style: italic; pointer-events: auto;
+    }
+    .unlock-btn {
+      font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 1px;
+      text-transform: uppercase; background: none; border: 1px solid var(--border);
+      color: var(--accent); padding: 5px 12px; cursor: pointer; border-radius: 2px;
+      font-style: normal;
+    }
+    .unlock-btn:hover { background: rgba(212,196,160,0.3); }
 
     .chevron { font-size: 10px; opacity: 0.6; flex-shrink: 0; }
     .week-title {
@@ -611,12 +626,19 @@ function renderWeek(week, today) {
   if (!firstDate) {
     const visible = today >= '2026-07-17';
     if (!visible) {
-      return `<div class="week week-future">
-        <div class="week-header">
+      return `<div class="week week-future" id="week-${week.weekNum}">
+        <div class="week-header" onclick="toggleWeek(${week.weekNum})">
           <span class="chevron">▶</span>
           <span class="week-title">${week.label}</span>
           <span class="week-subtitle">${week.subtitle}</span>
           <span class="week-badge">unlocks Jul 17</span>
+        </div>
+        <div class="week-body week-body-locked" id="week-body-${week.weekNum}" style="display:none">
+          <div class="unlock-bar" id="unlock-bar-${week.weekNum}">
+            <span>Upcoming week — unlock to edit tasks</span>
+            <button class="unlock-btn" onclick="event.stopPropagation();unlockWeek(${week.weekNum})">🔓 Unlock for editing</button>
+          </div>
+          ${week.days.map(day => renderDay(day, today)).join('')}
         </div>
       </div>`;
     }
@@ -627,12 +649,21 @@ function renderWeek(week, today) {
   const isFuture  = firstDate && today < firstDate;
 
   if (isFuture) {
-    return `<div class="week week-future">
-      <div class="week-header">
+    const { done: fd, total: ft } = weekProgress(week);
+    const fAllDone = fd === ft;
+    return `<div class="week week-future" id="week-${week.weekNum}">
+      <div class="week-header" onclick="toggleWeek(${week.weekNum})">
         <span class="chevron">▶</span>
         <span class="week-title">${week.label}</span>
         <span class="week-subtitle">${week.subtitle}</span>
-        <span class="week-badge">unlocks ${fmtDate(firstDate)}</span>
+        <span class="week-badge ${fAllDone ? 'badge-done' : ''}">${fd} / ${ft}${fAllDone ? ' ✓' : ''} · unlocks ${fmtDate(firstDate)}</span>
+      </div>
+      <div class="week-body week-body-locked" id="week-body-${week.weekNum}" style="display:none">
+        <div class="unlock-bar" id="unlock-bar-${week.weekNum}">
+          <span>Upcoming week — unlock to edit tasks</span>
+          <button class="unlock-btn" onclick="event.stopPropagation();unlockWeek(${week.weekNum})">🔓 Unlock for editing</button>
+        </div>
+        ${week.days.map(day => renderDay(day, today)).join('')}
       </div>
     </div>`;
   }
@@ -745,6 +776,13 @@ function toggleWeek(weekNum) {
   const open = body.style.display !== 'none';
   body.style.display = open ? 'none' : 'block';
   if (chevron) chevron.textContent = open ? '▶' : '▼';
+}
+
+function unlockWeek(weekNum) {
+  const body = document.getElementById(`week-body-${weekNum}`);
+  const bar  = document.getElementById(`unlock-bar-${weekNum}`);
+  if (body) body.classList.remove('week-body-locked');
+  if (bar)  bar.style.display = 'none';
 }
 
 // ── Badge refresh ──────────────────────────────────────────────
