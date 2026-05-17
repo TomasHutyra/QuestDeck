@@ -566,7 +566,236 @@ const TASK_DATA = [
   },
 ];
 
-// App logic added in subsequent tasks
+// ── State ─────────────────────────────────────────────────────
+let state = { tasks: {}, routine: {}, metrics: {} };
+
+// ── Helpers ───────────────────────────────────────────────────
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function fmtDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T12:00:00');
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}
+
+function weekProgress(week) {
+  let done = 0, total = 0;
+  for (const day of week.days) {
+    for (const task of day.tasks) {
+      total++;
+      if (state.tasks[task.id]) done++;
+    }
+  }
+  return { done, total };
+}
+
+// ── Rendering ─────────────────────────────────────────────────
+
+function renderWeeks() {
+  const today = todayStr();
+  document.getElementById('week-list').innerHTML =
+    TASK_DATA.map(w => renderWeek(w, today)).join('');
+}
+
+function renderWeek(week, today) {
+  const datedDays = week.days.filter(d => d.date);
+  const firstDate = datedDays.length ? datedDays[0].date : null;
+  const lastDate  = datedDays.length ? datedDays[datedDays.length - 1].date : null;
+
+  // Post-launch week (no dates): visible only after Jul 16
+  if (!firstDate) {
+    const visible = today >= '2026-07-17';
+    if (!visible) {
+      return `<div class="week week-future">
+        <div class="week-header">
+          <span class="chevron">▶</span>
+          <span class="week-title">${week.label}</span>
+          <span class="week-subtitle">${week.subtitle}</span>
+          <span class="week-badge">unlocks Jul 17</span>
+        </div>
+      </div>`;
+    }
+  }
+
+  const isCurrent = firstDate && today >= firstDate && today <= lastDate;
+  const isPast    = firstDate && today > lastDate;
+  const isFuture  = firstDate && today < firstDate;
+
+  if (isFuture) {
+    return `<div class="week week-future">
+      <div class="week-header">
+        <span class="chevron">▶</span>
+        <span class="week-title">${week.label}</span>
+        <span class="week-subtitle">${week.subtitle}</span>
+        <span class="week-badge">unlocks ${fmtDate(firstDate)}</span>
+      </div>
+    </div>`;
+  }
+
+  const { done, total } = weekProgress(week);
+  const allDone = done === total;
+  const expanded = isCurrent || !firstDate;
+
+  return `<div class="week ${isCurrent || !firstDate ? 'week-current' : 'week-past'}" id="week-${week.weekNum}">
+    <div class="week-header" onclick="toggleWeek(${week.weekNum})">
+      <span class="chevron">${expanded ? '▼' : '▶'}</span>
+      <span class="week-title">${week.label}</span>
+      <span class="week-subtitle">${week.subtitle}</span>
+      <span class="week-badge ${allDone ? 'badge-done' : ''}">${done} / ${total}${allDone ? ' ✓' : ''}</span>
+    </div>
+    <div class="week-body" id="week-body-${week.weekNum}" style="display:${expanded ? 'block' : 'none'}">
+      ${week.days.map(day => renderDay(day, today)).join('')}
+    </div>
+  </div>`;
+}
+
+function renderDay(day, today) {
+  const isToday  = day.date === today;
+  const isPast   = day.date && day.date < today;
+  const isFuture = day.date && day.date > today;
+  const noDate   = !day.date;
+
+  let cls = 'day-future';
+  if (isToday) cls = 'day-today';
+  else if (isPast) cls = 'day-past';
+  else if (noDate) cls = 'day-future';
+
+  const allDone = day.tasks.every(t => state.tasks[t.id]);
+  const anyDone = day.tasks.some(t => state.tasks[t.id]);
+
+  let badge = '';
+  if (isToday) {
+    badge = `<span class="day-badge badge-today">▶ Today</span>`;
+  } else if (isPast && allDone) {
+    badge = `<span class="day-badge badge-done-day">done</span>`;
+  } else if (isFuture && anyDone) {
+    badge = `<span class="day-badge badge-early">✓ done early</span>`;
+  } else if (isFuture) {
+    badge = `<span class="day-hint">complete early if ready</span>`;
+  }
+
+  const tasks = day.tasks.map(renderTask).join('');
+  const metricHtml = renderMetricArea(day, today, isToday, isPast);
+  const dayId = day.date || day.dayLabel.replace(/\W+/g, '-');
+
+  return `<div class="day ${cls}" id="day-${dayId}">
+    <div class="day-header">
+      <span class="day-label">${day.dayLabel.toUpperCase()}</span>
+      ${badge}
+    </div>
+    ${tasks}
+    ${metricHtml}
+  </div>`;
+}
+
+function renderTask(task) {
+  const done = !!state.tasks[task.id];
+  return `<label class="task${done ? ' done' : ''}">
+    <input type="checkbox" id="task-${task.id}" ${done ? 'checked' : ''}
+      onchange="onTaskChange('${task.id}', this.checked)">
+    <span>${escHtml(task.text)}</span>
+  </label>`;
+}
+
+function renderMetricArea(day, today, isToday, isPast) {
+  if (isToday) {
+    const m = state.metrics[today] || {};
+    return `<div class="metric-log">
+      <label class="metric-field">Pre-reg
+        <input type="number" id="metric-prereg" value="${m.preReg != null ? m.preReg : ''}"
+          placeholder="0" min="0" onchange="onMetricChange('preReg', this.value)">
+      </label>
+      <label class="metric-field">TikTok views
+        <input type="number" id="metric-tiktok" value="${m.tiktok != null ? m.tiktok : ''}"
+          placeholder="0" min="0" onchange="onMetricChange('tiktok', this.value)">
+      </label>
+      <label class="metric-field">Outreach sent
+        <input type="number" id="metric-outreach" value="${m.outreach != null ? m.outreach : ''}"
+          placeholder="0" min="0" onchange="onMetricChange('outreach', this.value)">
+      </label>
+      <label class="metric-field notes-field">Notes
+        <input type="text" id="metric-notes" value="${escHtml(m.notes || '')}"
+          placeholder="anything to note…" onchange="onMetricChange('notes', this.value)">
+      </label>
+    </div>`;
+  }
+  if (isPast && day.date && state.metrics[day.date]) {
+    const m = state.metrics[day.date];
+    const parts = [];
+    if (m.preReg != null && m.preReg !== '') parts.push(`Pre-reg: <strong>${m.preReg}</strong>`);
+    if (m.tiktok != null && m.tiktok !== '') parts.push(`TikTok: <strong>${m.tiktok.toLocaleString()}</strong>`);
+    if (m.outreach != null && m.outreach !== '') parts.push(`Outreach: <strong>${m.outreach}</strong>`);
+    if (m.notes) parts.push(`"${escHtml(m.notes)}"`);
+    if (parts.length) return `<div class="metric-readonly">${parts.join(' · ')}</div>`;
+  }
+  return '';
+}
+
+// ── Week accordion toggle ──────────────────────────────────────
+
+function toggleWeek(weekNum) {
+  const body = document.getElementById(`week-body-${weekNum}`);
+  if (!body) return;
+  const chevron = body.previousElementSibling.querySelector('.chevron');
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  if (chevron) chevron.textContent = open ? '▶' : '▼';
+}
+
+// ── Badge refresh ──────────────────────────────────────────────
+
+function updateBadges() {
+  const today = todayStr();
+  for (const week of TASK_DATA) {
+    const badgeEl = document.querySelector(`#week-${week.weekNum} .week-badge`);
+    if (!badgeEl) continue;
+    const { done, total } = weekProgress(week);
+    const allDone = done === total;
+    badgeEl.textContent = `${done} / ${total}${allDone ? ' ✓' : ''}`;
+    badgeEl.className = 'week-badge' + (allDone ? ' badge-done' : '');
+
+    for (const day of week.days) {
+      const dayId = day.date || day.dayLabel.replace(/\W+/g, '-');
+      const dayEl = document.getElementById(`day-${dayId}`);
+      if (!dayEl) continue;
+
+      const allTasksDone = day.tasks.every(t => state.tasks[t.id]);
+      const anyTaskDone  = day.tasks.some(t => state.tasks[t.id]);
+      const isToday  = day.date === today;
+      const isPast   = day.date && day.date < today;
+      const isFuture = day.date && day.date > today;
+
+      let badge = '';
+      if (isToday) badge = `<span class="day-badge badge-today">▶ Today</span>`;
+      else if (isPast && allTasksDone) badge = `<span class="day-badge badge-done-day">done</span>`;
+      else if (isFuture && anyTaskDone) badge = `<span class="day-badge badge-early">✓ done early</span>`;
+      else if (isFuture) badge = `<span class="day-hint">complete early if ready</span>`;
+
+      const headerEl = dayEl.querySelector('.day-header');
+      if (headerEl) {
+        const old = headerEl.querySelector('.day-badge, .day-hint');
+        if (old) old.remove();
+        if (badge) headerEl.insertAdjacentHTML('beforeend', badge);
+      }
+
+      for (const task of day.tasks) {
+        const cb = document.getElementById(`task-${task.id}`);
+        if (!cb) continue;
+        const label = cb.closest('label');
+        if (label) label.className = 'task' + (state.tasks[task.id] ? ' done' : '');
+      }
+    }
+  }
+}
+
+window.addEventListener('load', () => {
+  renderWeeks();
+});
 </script>
 </body>
 </html>
