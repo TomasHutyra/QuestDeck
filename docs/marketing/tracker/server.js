@@ -17,6 +17,7 @@ function writeData(filePath, data) {
 }
 
 function createRequestHandler(dataFilePath, htmlFilePath) {
+  const dir = path.dirname(htmlFilePath);
   return function handler(req, res) {
     if (req.method === 'GET' && req.url === '/') {
       try {
@@ -26,6 +27,15 @@ function createRequestHandler(dataFilePath, htmlFilePath) {
       } catch {
         res.writeHead(404);
         res.end('index.html not found');
+      }
+    } else if (req.method === 'GET' && req.url === '/utils.js') {
+      try {
+        const js = fs.readFileSync(path.join(dir, 'utils.js'), 'utf8');
+        res.writeHead(200, { 'Content-Type': 'text/javascript; charset=utf-8' });
+        res.end(js);
+      } catch {
+        res.writeHead(404);
+        res.end('utils.js not found');
       }
     } else if (req.method === 'GET' && req.url === '/data') {
       const data = readData(dataFilePath);
