@@ -830,9 +830,97 @@ function onTaskChange(id, checked) {
   updateBadges();
 }
 
+function onMetricChange(field, value) {
+  const today = todayStr();
+  if (!state.metrics[today]) state.metrics[today] = {};
+  if (field === 'preReg' || field === 'tiktok' || field === 'outreach') {
+    state.metrics[today][field] = value ? parseInt(value, 10) : null;
+  } else {
+    state.metrics[today][field] = value || null;
+  }
+  saveState();
+  updateBadges();
+}
+
+function toggleHistory() {
+  const wrap = document.getElementById('history-table-wrap');
+  const btn = document.getElementById('toggle-history');
+  const isOpen = wrap.style.display !== 'none';
+  wrap.style.display = isOpen ? 'none' : 'block';
+  renderHistoryTable();
+  if (btn) {
+    btn.textContent = isOpen
+      ? '▼  Metrics history'
+      : '▲  Metrics history';
+  }
+}
+
+function renderHistoryTable() {
+  const tbody = document.getElementById('history-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  const dates = Object.keys(state.metrics || {}).sort().reverse();
+  for (const date of dates) {
+    const m = state.metrics[date];
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${fmtDate(date)}</td>
+      <td>${m.preReg != null && m.preReg !== '' ? m.preReg : '—'}</td>
+      <td>${m.tiktok != null && m.tiktok !== '' ? m.tiktok.toLocaleString() : '—'}</td>
+      <td>${m.outreach != null && m.outreach !== '' ? m.outreach : '—'}</td>
+      <td><em>${m.notes ? escHtml(m.notes) : '—'}</em></td>
+    `;
+    tbody.appendChild(row);
+  }
+}
+
+// ── Header ────────────────────────────────────────────────────
+
+function renderHeader() {
+  const now = new Date();
+  const phase = getPhase(now);
+  const tminus = getTMinus(now);
+
+  document.getElementById('header-phase').textContent = phase;
+
+  let tLabel;
+  if (tminus > 0)       tLabel = `T−${tminus} days`;
+  else if (tminus === 0) tLabel = '🚀 Launch Day!';
+  else                  tLabel = `T+${Math.abs(tminus)} days`;
+  document.getElementById('header-tminus').textContent = tLabel;
+
+  const today = todayStr();
+  const preRegLabel = document.getElementById('routine-prereg-label');
+  if (preRegLabel) {
+    preRegLabel.textContent = today < '2026-06-01'
+      ? 'Check launch prep checklist'
+      : 'Check pre-reg count';
+  }
+}
+
+// ── Routine strip ──────────────────────────────────────────────
+
+function applyRoutineState() {
+  const today = todayStr();
+  const r = state.routine[today] || {};
+  document.getElementById('routine-prereg').checked  = !!r.preReg;
+  document.getElementById('routine-replies').checked = !!r.replies;
+  document.getElementById('routine-task').checked    = !!r.task;
+}
+
+function onRoutineChange(field, checked) {
+  const today = todayStr();
+  if (!state.routine[today]) state.routine[today] = {};
+  state.routine[today][field] = checked;
+  saveState();
+}
+
 window.addEventListener('load', async () => {
+  renderHeader();
   await loadState();
   renderWeeks();
+  applyRoutineState();
 });
 </script>
 </body>
