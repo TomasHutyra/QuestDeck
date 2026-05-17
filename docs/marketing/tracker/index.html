@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuestDeck Launch Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f5f0e8;
+      --text: #3d2b00;
+      --accent: #5c4a1e;
+      --muted: #8b7240;
+      --green: #5c8a3c;
+      --amber: #c4891a;
+      --border: #d4c4a0;
+      --today-bg: rgba(196,137,26,0.08);
+      --past-bg: #faf8f3;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg);
+      background-image: repeating-linear-gradient(
+        0deg, transparent, transparent 27px,
+        rgba(180,155,100,0.18) 27px, rgba(180,155,100,0.18) 28px
+      );
+      background-attachment: fixed;
+      color: var(--text);
+      font-family: 'Crimson Pro', Georgia, serif;
+      font-size: 16px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    #site-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(245,240,232,0.96);
+      backdrop-filter: blur(4px);
+      border-bottom: 2px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .header-wordmark { line-height: 1.2; }
+    .header-title {
+      font-family: 'Cinzel', serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 1.5px;
+    }
+    .header-sub {
+      font-family: 'Cinzel', serif;
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    #header-phase {
+      margin-left: auto;
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      background: var(--accent);
+      color: #f5f0e8;
+      padding: 4px 12px;
+      border-radius: 2px;
+    }
+    #header-tminus {
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+      color: var(--amber);
+      white-space: nowrap;
+      min-width: 90px;
+      text-align: right;
+    }
+
+    /* ── Routine strip ── */
+    #routine-strip {
+      background: rgba(212,196,160,0.18);
+      border-bottom: 1px solid var(--border);
+      padding: 9px 24px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .routine-label {
+      font-family: 'Cinzel', serif;
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .routine-check {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 14px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .routine-check input[type=checkbox] {
+      accent-color: var(--amber);
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+    }
+
+    /* ── Main layout ── */
+    main { max-width: 820px; margin: 0 auto; padding: 24px 24px 8px; }
+
+    /* ── Week ── */
+    .week {
+      margin-bottom: 8px;
+      border-radius: 3px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .week-current { border-color: var(--accent); border-width: 2px; }
+    .week-future { opacity: 0.45; pointer-events: none; }
+
+    .week-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 16px;
+      cursor: pointer;
+      user-select: none;
+      background: rgba(212,196,160,0.15);
+    }
+    .week-current .week-header { background: var(--accent); color: #f5f0e8; }
+    .week-future .week-header { background: rgba(212,196,160,0.1); cursor: default; }
+
+    .chevron { font-size: 10px; opacity: 0.6; flex-shrink: 0; }
+    .week-title {
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+    }
+    .week-subtitle { font-size: 13px; opacity: 0.65; flex: 1; font-style: italic; }
+    .week-badge {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      padding: 2px 9px;
+      border-radius: 10px;
+      background: rgba(0,0,0,0.1);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .week-current .week-badge { background: rgba(255,255,255,0.2); }
+    .badge-done { background: var(--green) !important; color: #fff; }
+
+    /* ── Day ── */
+    .day { border-top: 1px solid var(--border); padding: 10px 16px 10px; }
+    .day-past { background: var(--past-bg); }
+    .day-today { background: var(--today-bg); }
+    .day-future { background: #fff; }
+
+    .day-header { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; flex-wrap: wrap; }
+    .day-label {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      letter-spacing: 0.8px;
+      color: var(--muted);
+      width: 92px;
+      flex-shrink: 0;
+    }
+    .day-today .day-label { color: var(--amber); font-weight: 600; }
+
+    .day-badge {
+      font-family: 'Cinzel', serif;
+      font-size: 9px;
+      letter-spacing: 0.5px;
+      padding: 2px 8px;
+      border-radius: 8px;
+    }
+    .badge-today { background: var(--amber); color: #fff; }
+    .badge-early { background: rgba(196,137,26,0.12); color: var(--amber); border: 1px solid rgba(196,137,26,0.4); }
+    .badge-done-day { background: rgba(92,138,60,0.12); color: var(--green); border: 1px solid rgba(92,138,60,0.4); }
+    .day-hint { font-size: 11px; color: #bbb; font-style: italic; }
+
+    /* ── Task ── */
+    .task {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 14.5px;
+      line-height: 1.5;
+      margin-bottom: 4px;
+      cursor: pointer;
+    }
+    .task input[type=checkbox] {
+      margin-top: 3px;
+      flex-shrink: 0;
+      accent-color: var(--green);
+      width: 14px;
+      height: 14px;
+      cursor: pointer;
+    }
+    .task.done span { text-decoration: line-through; color: var(--muted); }
+
+    /* ── Metric log ── */
+    .metric-log {
+      margin-top: 10px;
+      padding: 9px 12px;
+      background: rgba(255,255,255,0.65);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .metric-field {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-family: 'Cinzel', serif;
+      font-size: 9px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .metric-field input {
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 3px 6px;
+      font-family: 'Crimson Pro', serif;
+      font-size: 14px;
+      background: var(--bg);
+      color: var(--text);
+      width: 72px;
+    }
+    .metric-field input[type=text] { width: 180px; }
+    .metric-field input:focus { outline: 1px solid var(--amber); border-color: var(--amber); }
+    .metric-readonly { font-size: 13px; color: var(--muted); font-style: italic; margin-top: 6px; }
+
+    /* ── History section ── */
+    #history-section { max-width: 820px; margin: 0 auto 48px; padding: 0 24px 0; }
+    #toggle-history {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--accent);
+      padding: 9px 16px;
+      cursor: pointer;
+      border-radius: 2px;
+      width: 100%;
+      text-align: left;
+      margin-bottom: 2px;
+    }
+    #toggle-history:hover { background: rgba(212,196,160,0.2); }
+    #history-table-wrap { margin-top: 10px; overflow-x: auto; }
+    #history-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    #history-table th {
+      font-family: 'Cinzel', serif;
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 8px 10px;
+      text-align: left;
+      border-bottom: 2px solid var(--border);
+    }
+    #history-table td { padding: 7px 10px; border-bottom: 1px solid rgba(212,196,160,0.4); vertical-align: top; }
+    #history-table tr:last-child td { border-bottom: none; }
+    #history-table tr:hover td { background: rgba(212,196,160,0.1); }
+  </style>
+</head>
+<body>
+
+<header id="site-header">
+  <div class="header-wordmark">
+    <div class="header-title">QuestDeck</div>
+    <div class="header-sub">Launch Chronicle · Season 2026</div>
+  </div>
+  <div id="header-phase">—</div>
+  <div id="header-tminus">—</div>
+</header>
+
+<div id="routine-strip">
+  <span class="routine-label">Daily</span>
+  <label class="routine-check">
+    <input type="checkbox" id="routine-prereg" onchange="onRoutineChange('preReg', this.checked)">
+    <span id="routine-prereg-label">Check pre-reg count</span>
+  </label>
+  <label class="routine-check">
+    <input type="checkbox" id="routine-replies" onchange="onRoutineChange('replies', this.checked)">
+    <span>Reply to TikTok / Reddit comments</span>
+  </label>
+  <label class="routine-check">
+    <input type="checkbox" id="routine-task" onchange="onRoutineChange('task', this.checked)">
+    <span>Daily 20-min task done</span>
+  </label>
+</div>
+
+<main id="week-list"></main>
+
+<section id="history-section">
+  <button id="toggle-history" onclick="toggleHistory()">▼ &nbsp;Metrics history</button>
+  <div id="history-table-wrap" style="display:none">
+    <table id="history-table">
+      <thead>
+        <tr>
+          <th>Date</th><th>Pre-reg</th><th>TikTok views</th><th>Outreach sent</th><th>Notes</th>
+        </tr>
+      </thead>
+      <tbody id="history-tbody"></tbody>
+    </table>
+  </div>
+</section>
+
+<script src="utils.js"></script>
+<script>
+  // Task data and app logic added in subsequent tasks
+</script>
+</body>
+</html>
