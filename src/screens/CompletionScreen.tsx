@@ -13,6 +13,7 @@ import { completeQuest } from '../actions/completeQuest';
 import { pickPhotoFromLibrary, takePhoto } from '../lib/photos';
 import {
   playAlreadyCompletedFeedback,
+  playBadgeUnlockedFeedback,
   playLevelUpFeedback,
   playQuestCompletedFeedback,
   playStreakExtendedFeedback,
@@ -71,10 +72,12 @@ export function CompletionScreen({ navigation, route }: Props) {
 
   const [result, setResult] = useState<CompleteQuestResult | null>(null);
   const [overlayVisible, setOverlayVisible] = useState(false);
+  const [badgeOverlayVisible, setBadgeOverlayVisible] = useState(false);
   const [promptVisible, setPromptVisible] = useState(false);
   const [reviewPromptVisible, setReviewPromptVisible] = useState(false);
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const hasPlayedRef = useRef(false);
+  const badgeOverlayQueuedRef = useRef(false);
   const promptShownRef = useRef(false);
   const reviewPromptShownRef = useRef(false);
 
@@ -114,21 +117,29 @@ export function CompletionScreen({ navigation, route }: Props) {
 
   const handleMarkDone = () => {
     if (!quest) return;
+    setOverlayVisible(false);
+    setBadgeOverlayVisible(false);
+    badgeOverlayQueuedRef.current = false;
+
     const r = completeQuest(quest);
     setResult(r);
 
     if (!hasPlayedRef.current) {
       hasPlayedRef.current = true;
       if (r.status === 'already_completed') {
-        playAlreadyCompletedFeedback();
+        void playAlreadyCompletedFeedback();
       } else if (r.levelUp) {
-        playLevelUpFeedback();
+        void playLevelUpFeedback();
         setOverlayVisible(true);
       } else if (r.streakExtended) {
-        playStreakExtendedFeedback();
+        void playStreakExtendedFeedback();
         setOverlayVisible(true);
+      } else if (r.newlyUnlockedBadgeIds.length > 0) {
+        badgeOverlayQueuedRef.current = true;
+        void playBadgeUnlockedFeedback();
+        setBadgeOverlayVisible(true);
       } else {
-        playQuestCompletedFeedback();
+        void playQuestCompletedFeedback();
         setOverlayVisible(true);
       }
     }
@@ -305,9 +316,25 @@ export function CompletionScreen({ navigation, route }: Props) {
           xpAwarded={result.xpAwarded}
           newStreak={result.streakAfter}
           newLevel={result.levelAfter}
-          onDismiss={() => setOverlayVisible(false)}
+          onDismiss={() => {
+            setOverlayVisible(false);
+            if (
+              result.newlyUnlockedBadgeIds.length > 0 &&
+              !badgeOverlayQueuedRef.current
+            ) {
+              badgeOverlayQueuedRef.current = true;
+              void playBadgeUnlockedFeedback();
+              setBadgeOverlayVisible(true);
+            }
+          }}
         />
       )}
+      <CelebrationOverlay
+        type="badge"
+        visible={badgeOverlayVisible}
+        badgeIds={result.newlyUnlockedBadgeIds}
+        onDismiss={() => setBadgeOverlayVisible(false)}
+      />
     </SafeAreaView>
   );
 }
