@@ -1,0 +1,82 @@
+[
+  {
+    "id": "first_quest",
+    "name": "First Quest",
+    "emoji": "🏁",
+    "description": "Complete your first real-life quest.",
+    "image": "badge_first_quest.png",
+    "condition": { "type": "completed_count", "target": 1 }
+  },
+  {
+    "id": "getting_started",
+    "name": "Getting Started",
+    "emoji": "✨",
+    "description": "Complete 3 quests.",
+    "image": "badge_getting_started.png",
+    "condition": { "type": "completed_count", "target": 3 }
+  },
+  {
+    "id": "quest_collector",
+    "name": "Quest Collector",
+    "emoji": "🎒",
+    "description": "Complete 10 quests.",
+    "image": "badge_quest_collector.png",
+    "condition": { "type": "completed_count", "target": 10 }
+  },
+  {
+    "id": "real_life_adventurer",
+    "name": "Real-Life Adventurer",
+    "emoji": "🧭",
+    "description": "Complete 25 real-life quests.",
+    "image": "badge_real_life_adventurer.png",
+    "condition": { "type": "completed_count", "target": 25 }
+  },
+  {
+    "id": "three_day_streak",
+    "name": "3-Day Streak",
+    "emoji": "🔥",
+    "description": "Complete quests on 3 different days in a row.",
+    "image": "badge_three_day_streak.png",
+    "condition": { "type": "streak_days", "target": 3 }
+  },
+  {
+    "id": "seven_day_streak",
+    "name": "7-Day Streak",
+    "emoji": "🔥",
+    "description": "Complete quests on 7 different days in a row.",
+    "image": "badge_seven_day_streak.png",
+    "condition": { "type": "streak_days", "target": 7 }
+  },
+  {
+    "id": "fresh_air",
+    "name": "Fresh Air",
+    "emoji": "🌳",
+    "description": "Complete 3 outdoor quests.",
+    "image": "badge_fresh_air.png",
+    "condition": { "type": "quest_location_count", "location": "outdoors", "target": 3 }
+  },
+  {
+    "id": "creative_spark",
+    "name": "Creative Spark",
+    "emoji": "🎨",
+    "description": "Complete 3 creative quests.",
+    "image": "badge_creative_spark.png",
+    "condition": { "type": "quest_mood_count", "mood": "creative", "target": 3 }
+  },
+  {
+    "id": "home_reset",
+    "name": "Home Reset",
+    "emoji": "🧹",
+    "description": "Complete 3 reset quests.",
+    "image": "badge_home_reset.png",
+    "condition": { "type": "quest_mood_count", "mood": "need-reset", "target": 3 }
+  },
+  {
+    "id": "social_starter",
+    "name": "Social Starter",
+    "emoji": "💬",
+    "description": "Complete 2 quests with others.",
+    "image": "badge_social_starter.png",
+    "condition": { "type": "quest_people_count", "people": ["partner", "friends"], "target": 2 }
+  }
+]

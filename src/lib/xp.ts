@@ -1,8 +1,8 @@
 export const LEVEL_THRESHOLDS = [0, 100, 250, 500, 900, 1500, 2200, 3000];
 
 export const LEVEL_LABELS = [
-  'Wanderer', 'Explorer', 'Adventurer', 'Quester',
-  'Seeker', 'Pathfinder', 'Voyager', 'Legend',
+  'Wanderer', 'Explorer', 'Adventurer', 'Pathfinder',
+  'Quest Seeker', 'Story Collector', 'Real-Life Hero', 'Legend',
 ];
 
 export function calculateLevel(xp: number): number {

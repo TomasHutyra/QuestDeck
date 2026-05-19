@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  View, Text, Image, FlatList, Modal, StyleSheet, TouchableOpacity,
+  View, Text, Image, FlatList, Modal, ScrollView, StyleSheet, TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -8,8 +8,11 @@ import { RootStackParamList } from '../navigation/RootStack';
 import { useProgressStore } from '../stores/progressStore';
 import { useQuestStore } from '../stores/questStore';
 import { questById } from '../data/quests';
+import { allBadges } from '../data/badges';
 import { Decky } from '../components/Decky';
+import { BadgeCard } from '../components/BadgeCard';
 import { LEVEL_LABELS, xpProgressInCurrentLevel } from '../lib/xp';
+import { getBadgeProgress, getNearestLockedBadges } from '../lib/badges';
 import { CompletedQuest } from '../types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Progress'>;
@@ -26,6 +29,18 @@ export function ProgressScreen({ navigation }: Props) {
   const sorted = [...completedQuests].sort(
     (a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
   );
+
+  const badgeInput = {
+    badgeDefinitions: allBadges,
+    completedQuests,
+    questById,
+    currentStreak,
+    longestStreak,
+    totalXp,
+    level,
+  };
+  const nearestLocked = getNearestLockedBadges(badgeInput);
+  const unlockedBadges = getBadgeProgress(badgeInput).filter((bp) => bp.unlocked);
 
   const renderItem = ({ item }: { item: CompletedQuest }) => {
     const quest = questById[item.questId];
@@ -53,24 +68,24 @@ export function ProgressScreen({ navigation }: Props) {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={styles.backText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Progress</Text>
+        <Text style={styles.title}>Adventure Log</Text>
       </View>
 
       <FlatList
         data={sorted}
-        keyExtractor={(item) => item.completedAt}
+        keyExtractor={(item) => `${item.questId}-${item.completedAt}`}
         ListHeaderComponent={
           <View style={styles.top}>
+            {/* Section 1: Summary card */}
             <View style={styles.levelCard}>
-              <Text style={styles.levelSub}>Current level</Text>
-              <Text style={styles.levelNum}>Level {level}</Text>
-              <Text style={styles.levelLabel}>{levelLabel}</Text>
+              <Text style={styles.levelSub}>Adventure Log</Text>
+              <Text style={styles.levelNum}>Level {level} · {levelLabel}</Text>
               <View style={styles.track}>
                 <View style={[styles.fill, { width: `${Math.min(progress * 100, 100)}%` }]} />
               </View>
               <View style={styles.xpRow}>
                 <Text style={styles.xpText}>{totalXp} XP</Text>
-                <Text style={styles.xpText}>{totalXp + (total - earned)} XP</Text>
+                <Text style={styles.xpText}>{totalXp + (total - earned)} XP to next</Text>
               </View>
             </View>
 
@@ -88,18 +103,54 @@ export function ProgressScreen({ navigation }: Props) {
               <View style={styles.statBox}>
                 <Text style={styles.statEmoji}>✅</Text>
                 <Text style={styles.statNum}>{completedQuests.length}</Text>
-                <Text style={styles.statLabel}>done</Text>
+                <Text style={styles.statLabel}>quests done</Text>
               </View>
             </View>
 
+            {/* Section 2: Next Badges */}
+            <Text style={styles.sectionLabel}>NEXT BADGES</Text>
+            {nearestLocked.length === 0 ? (
+              <View style={styles.infoCard}>
+                <Text style={styles.infoText}>
+                  All badges unlocked for now. More adventures are coming.
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.badgeList}>
+                {nearestLocked.map((bp) => (
+                  <BadgeCard key={bp.badge.id} progress={bp} variant="progress" />
+                ))}
+              </View>
+            )}
+
+            {/* Section 3: Unlocked Badges */}
+            <Text style={styles.sectionLabel}>UNLOCKED BADGES</Text>
+            {unlockedBadges.length === 0 ? (
+              <View style={styles.infoCard}>
+                <Text style={styles.infoText}>Complete your first quest to unlock badges.</Text>
+              </View>
+            ) : (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={styles.unlockedScroll}
+                contentContainerStyle={styles.unlockedContent}
+              >
+                {unlockedBadges.map((bp) => (
+                  <BadgeCard key={bp.badge.id} progress={bp} variant="unlocked" />
+                ))}
+              </ScrollView>
+            )}
+
+            {/* Section 4: Recent Adventures */}
             {sorted.length > 0 ? (
-              <Text style={styles.sectionLabel}>RECENT QUESTS</Text>
+              <Text style={styles.sectionLabel}>RECENT ADVENTURES</Text>
             ) : (
               <View style={styles.emptyCard}>
                 <Decky pose="empty" size={64} />
-                <Text style={styles.emptyTitle}>No quests yet</Text>
+                <Text style={styles.emptyTitle}>No adventures yet</Text>
                 <Text style={styles.emptyBody}>
-                  Head back to the home screen, pick a mood, and complete your first quest. It will appear here.
+                  Complete your first quest and it will appear here.
                 </Text>
               </View>
             )}
@@ -144,8 +195,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF8C42', borderRadius: 16, padding: 16, gap: 4,
   },
   levelSub: { fontSize: 11, color: 'rgba(255,255,255,0.7)' },
-  levelNum: { fontSize: 26, fontWeight: '900', color: 'white' },
-  levelLabel: { fontSize: 13, color: 'rgba(255,255,255,0.85)', marginBottom: 6 },
+  levelNum: { fontSize: 22, fontWeight: '900', color: 'white', marginBottom: 6 },
   track: {
     height: 6, backgroundColor: 'rgba(255,255,255,0.3)',
     borderRadius: 3, overflow: 'hidden',
@@ -163,13 +213,20 @@ const styles = StyleSheet.create({
   statLabel: { fontSize: 10, color: '#aaa', marginTop: 1 },
   sectionLabel: {
     fontSize: 11, fontWeight: '700', color: '#aaa',
-    letterSpacing: 0.5, paddingHorizontal: 0,
+    letterSpacing: 0.5,
   },
+  badgeList: { marginBottom: 4 },
+  infoCard: {
+    backgroundColor: 'white', borderRadius: 14, padding: 16, alignItems: 'center',
+  },
+  infoText: { fontSize: 13, color: '#aaa', textAlign: 'center' },
+  unlockedScroll: { marginHorizontal: -16 },
+  unlockedContent: { paddingHorizontal: 16, flexDirection: 'row', gap: 8, paddingBottom: 4 },
   emptyCard: {
     marginTop: 24, alignItems: 'center', padding: 24,
     backgroundColor: 'white', borderRadius: 16, gap: 8,
   },
-  emptyTitle: { fontSize: 16, fontWeight: '800', color: '#1a1a1a' },
+  emptyTitle: { fontSize: 15, fontWeight: '800', color: '#1a1a1a' },
   emptyBody: { fontSize: 13, color: '#aaa', textAlign: 'center', lineHeight: 20 },
   historyItem: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
