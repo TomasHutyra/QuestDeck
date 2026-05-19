@@ -60,3 +60,7 @@ export async function playAlreadyCompletedFeedback(): Promise<void> {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning)
   );
 }
+
+export async function playBadgeUnlockedFeedback(): Promise<void> {
+  await triggerHaptic(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy));
+}
