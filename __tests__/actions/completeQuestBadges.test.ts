@@ -79,15 +79,16 @@ describe('getRecentlyUnlockedBadges', () => {
 // ── completeQuest badge recording ─────────────────────────────────────────
 
 describe('completeQuest badge recording', () => {
-  it('completing first quest records first_quest in unlockedAt', () => {
-    completeQuest(questEasy);
+  it('completing first quest records first_quest in unlockedAt and returns it in newlyUnlockedBadgeIds', () => {
+    const result = completeQuest(questEasy);
 
     const { unlockedAt } = useBadgeStore.getState();
     expect(unlockedAt['first_quest']).toBeDefined();
     expect(unlockedAt['first_quest']).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    expect(result.newlyUnlockedBadgeIds).toContain('first_quest');
   });
 
-  it('completing third quest records getting_started in unlockedAt', () => {
+  it('completing third quest records getting_started in unlockedAt and returns it in newlyUnlockedBadgeIds', () => {
     useQuestStore.setState({
       completedQuests: [
         { questId: 'q1', completedAt: '2026-01-01T00:00:00.000Z', completedDate: '2026-01-01', xpAwarded: 10 },
@@ -98,21 +99,24 @@ describe('completeQuest badge recording', () => {
     });
     useProgressStore.setState({ totalXp: 20, level: 1, currentStreak: 0, longestStreak: 0, lastCompletedDate: null });
 
-    completeQuest(questEasy); // quest #3
+    // questEasy.id = 'test-quest-easy' — distinct from pre-seeded q1/q2, so not already_completed
+    const result = completeQuest(questEasy);
 
     const { unlockedAt } = useBadgeStore.getState();
     expect(unlockedAt['getting_started']).toBeDefined();
+    expect(result.newlyUnlockedBadgeIds).toContain('getting_started');
   });
 
-  it('already_completed does not record any badge unlocks', () => {
-    completeQuest(questEasy);           // first completion — records first_quest
-    useBadgeStore.setState({ unlockedAt: {} }); // reset badge store
-    completeQuest(questEasy);           // already_completed — must not touch badge store
+  it('already_completed does not record any badge unlocks and returns empty newlyUnlockedBadgeIds', () => {
+    completeQuest(questEasy);                    // first completion — records first_quest
+    useBadgeStore.setState({ unlockedAt: {} });  // reset badge store
+    const result = completeQuest(questEasy);     // already_completed — must not touch badge store
 
     expect(Object.keys(useBadgeStore.getState().unlockedAt)).toHaveLength(0);
+    expect(result.newlyUnlockedBadgeIds).toEqual([]);
   });
 
-  it('badges already unlocked before this completion are not re-recorded', () => {
+  it('badges already unlocked before this completion are not re-recorded and not in newlyUnlockedBadgeIds', () => {
     useQuestStore.setState({
       completedQuests: [
         { questId: 'q1', completedAt: '2026-01-01T00:00:00.000Z', completedDate: '2026-01-01', xpAwarded: 10 },
@@ -123,14 +127,14 @@ describe('completeQuest badge recording', () => {
     useProgressStore.setState({ totalXp: 10, level: 1, currentStreak: 1, longestStreak: 1, lastCompletedDate: null });
     useBadgeStore.setState({ unlockedAt: { first_quest: '2026-01-01T00:00:00.000Z' } });
 
-    completeQuest(questEasy); // quest #2 — first_quest already unlocked before
+    // quest #2 — first_quest (target 1) was already unlocked before; should not appear in result
+    const result = completeQuest(questEasy);
 
     expect(useBadgeStore.getState().unlockedAt['first_quest']).toBe('2026-01-01T00:00:00.000Z');
+    expect(result.newlyUnlockedBadgeIds).not.toContain('first_quest');
   });
 
   it('multiple badges unlocked by one completion are recorded with the same timestamp', () => {
-    // Completing quest #3 with a 2-day streak extending to 3
-    // unlocks both getting_started (count 3) and three_day_streak (streak 3)
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayStr = [
@@ -151,11 +155,41 @@ describe('completeQuest badge recording', () => {
       totalXp: 20, level: 1, currentStreak: 2, longestStreak: 2, lastCompletedDate: yesterdayStr,
     });
 
-    completeQuest(questEasy); // triggers count=3 AND streak=3 simultaneously
+    // quest #3 with streak 2→3: unlocks getting_started (count≥3) AND three_day_streak (streak≥3)
+    completeQuest(questEasy);
 
     const { unlockedAt } = useBadgeStore.getState();
     expect(unlockedAt['getting_started']).toBeDefined();
     expect(unlockedAt['three_day_streak']).toBeDefined();
     expect(unlockedAt['getting_started']).toBe(unlockedAt['three_day_streak']); // same nowIso
+  });
+
+  it('a single completion can return multiple newlyUnlockedBadgeIds', () => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = [
+      yesterday.getFullYear(),
+      String(yesterday.getMonth() + 1).padStart(2, '0'),
+      String(yesterday.getDate()).padStart(2, '0'),
+    ].join('-');
+
+    useQuestStore.setState({
+      completedQuests: [
+        { questId: 'q1', completedAt: '2026-01-01T00:00:00.000Z', completedDate: '2026-01-01', xpAwarded: 10 },
+        { questId: 'q2', completedAt: '2026-01-02T00:00:00.000Z', completedDate: '2026-01-02', xpAwarded: 10 },
+      ],
+      activeQuestId: null,
+      lastRevealedQuestIds: [],
+    });
+    useProgressStore.setState({
+      totalXp: 20, level: 1, currentStreak: 2, longestStreak: 2, lastCompletedDate: yesterdayStr,
+    });
+
+    // quest #3 with streak 2→3: getting_started (count≥3) + three_day_streak (streak≥3) both unlock
+    const result = completeQuest(questEasy);
+
+    expect(result.newlyUnlockedBadgeIds).toContain('getting_started');
+    expect(result.newlyUnlockedBadgeIds).toContain('three_day_streak');
+    expect(result.newlyUnlockedBadgeIds.length).toBeGreaterThanOrEqual(2);
   });
 });

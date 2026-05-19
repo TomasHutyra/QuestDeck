@@ -25,6 +25,7 @@ export function completeQuest(quest: Quest): CompleteQuestResult {
       streakBefore: currentStreak,
       streakAfter: currentStreak,
       streakExtended: false,
+      newlyUnlockedBadgeIds: [],
     };
   }
 
@@ -103,5 +104,6 @@ export function completeQuest(quest: Quest): CompleteQuestResult {
     streakBefore: currentStreak,
     streakAfter: newStreak,
     streakExtended: newStreak > currentStreak,
+    newlyUnlockedBadgeIds: newlyUnlockedIds,
   };
 }

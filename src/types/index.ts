@@ -58,4 +58,5 @@ export type CompleteQuestResult = {
   streakBefore: number;
   streakAfter: number;
   streakExtended: boolean;
+  newlyUnlockedBadgeIds: string[];
 };
