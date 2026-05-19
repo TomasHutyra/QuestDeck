@@ -9,7 +9,7 @@ import { useBadgeStore } from '../stores/badgeStore';
 import { questById } from '../data/quests';
 import { allBadges } from '../data/badges';
 import { BadgeCard } from '../components/BadgeCard';
-import { getBadgeProgress, BadgeProgress } from '../lib/badges';
+import { getBadgeProgress, getRecentlyUnlockedBadges, BadgeProgress } from '../lib/badges';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BadgeLog'>;
 
@@ -30,16 +30,7 @@ export function BadgeLogScreen({ navigation }: Props) {
 
   const allBadgeProgress = getBadgeProgress(badgeInput);
 
-  const unlockedBadges = allBadgeProgress
-    .filter((bp) => bp.unlocked)
-    .sort((a, b) => {
-      const tsA = unlockedAt[a.badge.id] ?? '';
-      const tsB = unlockedAt[b.badge.id] ?? '';
-      if (tsB !== tsA) return tsB.localeCompare(tsA);
-      const idxA = allBadges.findIndex((bd) => bd.id === a.badge.id);
-      const idxB = allBadges.findIndex((bd) => bd.id === b.badge.id);
-      return idxA - idxB;
-    });
+  const unlockedBadges = getRecentlyUnlockedBadges(badgeInput, unlockedAt, Infinity);
 
   const lockedBadges = allBadgeProgress
     .filter((bp) => !bp.unlocked)
@@ -64,15 +55,15 @@ export function BadgeLogScreen({ navigation }: Props) {
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.sectionLabel}>UNLOCKED  ({unlockedBadges.length})</Text>
+        <Text style={styles.sectionLabel}>UNLOCKED ({unlockedBadges.length})</Text>
 
         {unlockedBadges.length === 0 ? (
           <View style={styles.infoCard}>
             <Text style={styles.infoText}>Complete your first quest to earn badges.</Text>
           </View>
         ) : (
-          rows.map((row, i) => (
-            <View key={i} style={styles.row}>
+          rows.map((row) => (
+            <View key={row[0].badge.id} style={styles.row}>
               <View style={styles.cell}>
                 <BadgeCard progress={row[0]} variant="unlocked" style={styles.cardFull} />
               </View>
@@ -95,9 +86,7 @@ export function BadgeLogScreen({ navigation }: Props) {
           </View>
         ) : (
           lockedBadges.map((bp) => (
-            <View key={bp.badge.id} style={styles.progressCard}>
-              <BadgeCard progress={bp} variant="progress" />
-            </View>
+            <BadgeCard key={bp.badge.id} progress={bp} variant="progress" />
           ))
         )}
       </ScrollView>
@@ -123,7 +112,6 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: 10 },
   cell: { flex: 1 },
   cardFull: { width: '100%' },
-  progressCard: { marginBottom: 8 },
   infoCard: {
     backgroundColor: 'white',
     borderRadius: 14,
