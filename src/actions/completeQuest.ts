@@ -1,7 +1,11 @@
 import { Quest, CompleteQuestResult } from '../types';
 import { useQuestStore } from '../stores/questStore';
 import { useProgressStore } from '../stores/progressStore';
+import { useBadgeStore } from '../stores/badgeStore';
 import { calculateLevel, updateStreak, todayLocalDate } from '../lib/xp';
+import { getBadgeProgress, BadgeEngineInput } from '../lib/badges';
+import { allBadges } from '../data/badges';
+import { questById } from '../data/quests';
 
 export function completeQuest(quest: Quest): CompleteQuestResult {
   const { completedQuests } = useQuestStore.getState();
@@ -24,11 +28,23 @@ export function completeQuest(quest: Quest): CompleteQuestResult {
     };
   }
 
+  const nowIso = new Date().toISOString();
   const completedDate = todayLocalDate();
+
+  const beforeInput: BadgeEngineInput = {
+    badgeDefinitions: allBadges,
+    completedQuests,
+    questById,
+    currentStreak,
+    longestStreak,
+    totalXp,
+    level,
+  };
+  const beforeBadgeProgress = getBadgeProgress(beforeInput);
 
   useQuestStore.getState().addCompletedQuest({
     questId: quest.id,
-    completedAt: new Date().toISOString(),
+    completedAt: nowIso,
     completedDate,
     xpAwarded: quest.xp,
   });
@@ -49,6 +65,31 @@ export function completeQuest(quest: Quest): CompleteQuestResult {
     longestStreak: newLongest,
     lastCompletedDate: completedDate,
   });
+
+  const afterInput: BadgeEngineInput = {
+    badgeDefinitions: allBadges,
+    completedQuests: [
+      ...completedQuests,
+      { questId: quest.id, completedAt: nowIso, completedDate, xpAwarded: quest.xp },
+    ],
+    questById,
+    currentStreak: newStreak,
+    longestStreak: newLongest,
+    totalXp: newTotalXp,
+    level: newLevel,
+  };
+  const afterBadgeProgress = getBadgeProgress(afterInput);
+
+  const newlyUnlockedIds = afterBadgeProgress
+    .filter((after) => {
+      const before = beforeBadgeProgress.find((b) => b.badge.id === after.badge.id);
+      return before !== undefined && !before.unlocked && after.unlocked;
+    })
+    .map((bp) => bp.badge.id);
+
+  if (newlyUnlockedIds.length > 0) {
+    useBadgeStore.getState().recordUnlocked(newlyUnlockedIds, nowIso);
+  }
 
   return {
     status: 'completed',
