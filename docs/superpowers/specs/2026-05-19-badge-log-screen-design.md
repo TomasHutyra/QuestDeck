@@ -1,7 +1,7 @@
 # Badge Log Screen Design
 
 **Date:** 2026-05-19
-**Status:** Approved
+**Status:** Approved (corrections applied 2026-05-19)
 
 ## Goal
 
@@ -51,7 +51,7 @@ A compact touchable card between the stats row and the NEXT BADGES section label
 
 ### Unlocked Badges — Max 3 Recent
 
-Replace `getBadgeProgress(badgeInput).filter(bp => bp.unlocked)` with a new helper:
+Replace `getBadgeProgress(badgeInput).filter(bp => bp.unlocked)` with `getRecentlyUnlockedBadges`:
 
 ```ts
 getRecentlyUnlockedBadges(
@@ -61,7 +61,13 @@ getRecentlyUnlockedBadges(
 ): BadgeProgress[]
 ```
 
-`unlockedAt` comes from the new `badgeStore`. Sort unlocked badges by `unlockedAt[badge.id]` descending (most recently unlocked first), return top `count`. Badges missing from `unlockedAt` (unlocked before this feature shipped) sort to oldest.
+- Only includes unlocked badges
+- Sorts by `unlockedAt[badge.id]` descending (most recently unlocked first)
+- Badges missing from `unlockedAt` (existing users, pre-feature) sort to oldest
+- When timestamps are equal, preserve badge definition order (stable sort)
+- Returns top `count`
+
+`unlockedAt` comes from `badgeStore`.
 
 ### "See all →" Link
 
@@ -84,12 +90,12 @@ UNLOCKED BADGES                              See all →
 ← All Badges
 
 UNLOCKED  (N)
-[2-column grid of unlocked BadgeCards, variant="unlocked"]
+[2-column rows of unlocked BadgeCards, variant="unlocked"]
 — or —
 [empty state if none]
 
 NEXT BADGES
-[vertical list of locked BadgeCards, variant="progress"]
+[locked BadgeCards with progress, variant="progress"]
 — or —
 [all-unlocked message]
 ```
@@ -97,17 +103,21 @@ NEXT BADGES
 ### Behaviour
 
 - Derives badge data identically to ProgressScreen (same stores, same `questById`)
-- Unlocked section: all unlocked badges sorted most-recently-unlocked first, 2-column grid
-- Next badges section: all locked badges sorted by progress desc (same as `getNearestLockedBadges` but no count cap — show all)
+- Unlocked section: all unlocked badges sorted most-recently-unlocked first, rendered in 2-column rows
+- Next badges section: all locked badges sorted by progress desc (same sort as `getNearestLockedBadges` but no count cap — show all)
 - Empty state (no badges unlocked): "Complete your first quest to earn badges."
 - All-unlocked state: "All badges unlocked. More adventures are coming."
 - Uses existing `BadgeCard` — no new component
 
+### Implementation note — avoid nested FlatLists
+
+Use a single `ScrollView`. Render unlocked badges manually in 2-column rows (pair up the array, render each pair as a `View` with `flexDirection: 'row'`). Render next badges with `.map()`. This avoids nested vertical scroll conflicts.
+
 ### Styling
 
 - Same background (`#FFF8F0`), same card style as Adventure Log
-- 2-column grid: use `FlatList numColumns={2}` for unlocked section
-- Next badges: standard vertical list (same as ProgressScreen)
+- 2-column rows: gap between columns and between rows consistent with existing `BadgeCard` sizing
+- Next badges: vertical stack, same as ProgressScreen NEXT BADGES
 
 ---
 
@@ -129,25 +139,51 @@ Persisted to AsyncStorage under a new key `STORAGE_KEYS.BADGES`.
 
 ### Detection in `src/actions/completeQuest.ts`
 
-After the quest is added to `questStore` and progress is updated in `progressStore`, compute which badges newly flipped to unlocked:
+**If the quest is already completed, return early — do not evaluate or record badges.**
 
-1. Snapshot `unlockedAt` from `badgeStore` to know which badges were already recorded.
-2. Run `getBadgeProgress` with the updated state (new completedQuests + new streak/XP/level).
-3. For each badge that is now `unlocked` and NOT yet in `unlockedAt`, record it via `badgeStore.recordUnlocked([id], nowISO)`.
+Otherwise, use the same `nowIso` timestamp for both `completedAt` and badge unlock recording.
 
-This runs at the end of `completeQuest`, after all store updates.
-
-### `getRecentlyUnlockedBadges` signature
+Compute badge progress before and after the completion:
 
 ```ts
-getRecentlyUnlockedBadges(
-  input: BadgeEngineInput,
-  unlockedAt: Record<string, string>,
-  count: number,
-): BadgeProgress[]
+const nowIso = new Date().toISOString();
+
+const beforeBadgeProgress = getBadgeProgress(beforeInput);
+
+// add quest to questStore
+// update progressStore
+
+const afterBadgeProgress = getBadgeProgress(afterInput);
+
+const newlyUnlockedIds = afterBadgeProgress
+  .filter((after) => {
+    const before = beforeBadgeProgress.find((b) => b.badge.id === after.badge.id);
+    return before && !before.unlocked && after.unlocked;
+  })
+  .map((bp) => bp.badge.id);
+
+if (newlyUnlockedIds.length > 0) {
+  badgeStore.recordUnlocked(newlyUnlockedIds, nowIso);
+}
 ```
 
-Sorts unlocked badges by `unlockedAt[badge.id]` descending. Badges not present in `unlockedAt` (unlocked before this feature shipped, or streak badges unlocked before tracking) sort to oldest.
+This detects only badges that changed from **locked → unlocked** during this single completion. Badges already unlocked before this completion are not re-recorded. Badges already in `unlockedAt` from previous completions are not overwritten.
+
+The `beforeInput` must be constructed from store state **before** any mutations. The `afterInput` from state **after** all mutations.
+
+---
+
+## Tests
+
+New test file: `__tests__/actions/completeQuestBadges.test.ts`
+
+- Completing first quest records `first_quest` in `unlockedAt`
+- Completing third quest records `getting_started` in `unlockedAt`
+- `already_completed` does not record any badge unlocks
+- Badges already unlocked before this completion are not re-recorded (no overwrite)
+- Multiple badges unlocked by one completion are all recorded with the same timestamp
+- `getRecentlyUnlockedBadges` sorts by `unlockedAt` descending
+- Badges missing from `unlockedAt` sort to oldest (before any timestamped badges)
 
 ---
 
@@ -157,18 +193,20 @@ Sorts unlocked badges by `unlockedAt[badge.id]` descending. Badges not present i
 |--------|------|
 | Create | `src/stores/badgeStore.ts` — persisted unlock timestamps |
 | Modify | `src/lib/storage.ts` — add BADGES key |
-| Modify | `src/actions/completeQuest.ts` — detect and record newly unlocked badges |
+| Modify | `src/actions/completeQuest.ts` — detect locked→unlocked transitions, record with shared nowIso |
 | Modify | `src/lib/badges.ts` — add `getRecentlyUnlockedBadges` |
 | Modify | `src/screens/HomeScreen.tsx` — image fix + navigate to BadgeLog |
 | Modify | `src/screens/ProgressScreen.tsx` — badge tile, 3-recent cap, See all link |
 | Modify | `src/navigation/RootStack.tsx` — add BadgeLog route |
 | Create | `src/screens/BadgeLogScreen.tsx` |
+| Create | `__tests__/actions/completeQuestBadges.test.ts` |
 
 ---
 
 ## What Is Not In This Spec
 
+- No backend persistence — badge unlock timestamps are stored locally in AsyncStorage only
+- Badge progress is still fully derived from existing quest/progress store data
 - No new badge definitions
-- No new persistence — everything derived from existing stores
 - No animations
 - No social/sharing features
