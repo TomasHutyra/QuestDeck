@@ -17,13 +17,13 @@ type Particle = {
   size: number;
 };
 
-function makeParticles(): Particle[] {
-  return Array.from({ length: PARTICLE_COUNT }, (_, i) => ({
+function makeParticles(count: number): Particle[] {
+  return Array.from({ length: count }, (_, i) => ({
     translateY: new Animated.Value(-30),
     translateX: new Animated.Value(0),
     rotate: new Animated.Value(0),
     opacity: new Animated.Value(0),
-    left: (SCREEN_WIDTH / PARTICLE_COUNT) * i + Math.random() * 10,
+    left: (SCREEN_WIDTH / count) * i + Math.random() * 10,
     color: COLORS[i % COLORS.length],
     size: 6 + Math.round(Math.random() * 4),
   }));
@@ -31,11 +31,12 @@ function makeParticles(): Particle[] {
 
 type Props = {
   active: boolean;
+  count?: number;
 };
 
-export function Confetti({ active }: Props) {
+export function Confetti({ active, count = PARTICLE_COUNT }: Props) {
   const { reducedMotionEnabled } = useSettingsStore();
-  const particles = useRef<Particle[]>(makeParticles()).current;
+  const particles = useRef<Particle[]>(makeParticles(count)).current;
   const animRef = useRef<Animated.CompositeAnimation | null>(null);
 
   useEffect(() => {

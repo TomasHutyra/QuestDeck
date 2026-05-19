@@ -128,19 +128,21 @@ export function CompletionScreen({ navigation, route }: Props) {
       hasPlayedRef.current = true;
       if (r.status === 'already_completed') {
         void playAlreadyCompletedFeedback();
-      } else if (r.levelUp) {
-        void playLevelUpFeedback();
-        setOverlayVisible(true);
-      } else if (r.streakExtended) {
-        void playStreakExtendedFeedback();
-        setOverlayVisible(true);
-      } else if (r.newlyUnlockedBadgeIds.length > 0) {
-        badgeOverlayQueuedRef.current = true;
-        void playBadgeUnlockedFeedback();
-        setBadgeOverlayVisible(true);
       } else {
         void playQuestCompletedFeedback();
-        setOverlayVisible(true);
+        if (r.levelUp) {
+          void playLevelUpFeedback();
+          setOverlayVisible(true);
+        } else if (r.streakExtended) {
+          void playStreakExtendedFeedback();
+          setOverlayVisible(true);
+        } else if (r.newlyUnlockedBadgeIds.length > 0) {
+          badgeOverlayQueuedRef.current = true;
+          void playBadgeUnlockedFeedback();
+          setBadgeOverlayVisible(true);
+        } else {
+          setOverlayVisible(true);
+        }
       }
     }
   };

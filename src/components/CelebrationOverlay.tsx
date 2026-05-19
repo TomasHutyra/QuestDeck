@@ -130,23 +130,31 @@ export function CelebrationOverlay({
       )}
 
       {type === 'streak' && (
-        <Animated.View style={[styles.badge, styles.streakBadge, { opacity, transform: [{ scale }] }]}>
-          <Decky pose="streak" size={72} />
-          <Text style={styles.streakText}>{newStreak}-day streak!</Text>
-          <Text style={styles.streakSub}>Keep it going</Text>
-        </Animated.View>
+        <>
+          <Confetti active={visible} count={40} />
+          <Animated.View style={[styles.badge, styles.streakBadge, { opacity, transform: [{ scale }] }]}>
+            <Decky pose="streak" size={72} />
+            <Text style={styles.streakText}>{newStreak}-day streak!</Text>
+            <Text style={styles.streakSub}>Keep it going</Text>
+          </Animated.View>
+        </>
       )}
 
       {type === 'level-up' && (
-        <Animated.View style={[styles.badge, styles.levelUpBadge, { opacity, transform: [{ scale }] }]}>
-          <Text style={styles.levelUpEmoji}>⬆️</Text>
-          <Text style={styles.levelUpText}>Level {newLevel}!</Text>
-          <Text style={styles.levelUpSub}>New rank unlocked</Text>
-        </Animated.View>
+        <>
+          <Confetti active={visible} count={40} />
+          <Animated.View style={[styles.badge, styles.levelUpBadge, { opacity, transform: [{ scale }] }]}>
+            <Text style={styles.levelUpEmoji}>⬆️</Text>
+            <Text style={styles.levelUpText}>Level {newLevel}!</Text>
+            <Text style={styles.levelUpSub}>New rank unlocked</Text>
+          </Animated.View>
+        </>
       )}
 
       {type === 'badge' && badgeIds && (
-        <Animated.View style={[styles.badge, styles.badgeBadge, { opacity, transform: [{ scale }] }]}>
+        <>
+          <Confetti active={visible} count={40} />
+          <Animated.View style={[styles.badge, styles.badgeBadge, { opacity, transform: [{ scale }] }]}>
           {badgeIds.length === 1 ? (
             <>
               {renderBadgeIcon(badgeIds[0], 64, 40)}
@@ -174,6 +182,7 @@ export function CelebrationOverlay({
             </>
           )}
         </Animated.View>
+        </>
       )}
     </View>
   );
