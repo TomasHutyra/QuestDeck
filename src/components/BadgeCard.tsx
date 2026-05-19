@@ -1,16 +1,17 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet, StyleProp, ViewStyle } from 'react-native';
 import { BadgeProgress } from '../lib/badges';
 import { BADGE_IMAGES } from '../data/badges/badgeImages';
 
 type Props = {
   progress: BadgeProgress;
   variant: 'progress' | 'unlocked';
+  style?: StyleProp<ViewStyle>;
 };
 
 const VISUAL_SIZE = 64;
 
-export function BadgeCard({ progress, variant }: Props) {
+export function BadgeCard({ progress, variant, style }: Props) {
   const { badge, current, target, progress: pct } = progress;
   const imageSource = BADGE_IMAGES[badge.id];
 
@@ -24,7 +25,7 @@ export function BadgeCard({ progress, variant }: Props) {
 
   if (variant === 'unlocked') {
     return (
-      <View style={styles.unlockedCard}>
+      <View style={[styles.unlockedCard, style]}>
         {visual}
         <Text style={styles.name} numberOfLines={1}>{badge.name}</Text>
         <Text style={styles.unlockedDesc} numberOfLines={2}>{badge.description}</Text>
