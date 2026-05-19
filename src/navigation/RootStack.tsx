@@ -8,6 +8,7 @@ import { QuestRevealScreen } from '../screens/QuestRevealScreen';
 import { QuestDetailScreen } from '../screens/QuestDetailScreen';
 import { CompletionScreen } from '../screens/CompletionScreen';
 import { ProgressScreen } from '../screens/ProgressScreen';
+import { BadgeLogScreen } from '../screens/BadgeLogScreen';
 import { PacksScreen } from '../screens/PacksScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 
@@ -18,6 +19,7 @@ export type RootStackParamList = {
   QuestDetail: { questId: string };
   Completion: { questId: string };
   Progress: undefined;
+  BadgeLog: undefined;
   Packs: undefined;
   Settings: undefined;
 };
@@ -38,6 +40,7 @@ export function RootStack() {
       <Stack.Screen name="QuestDetail" component={QuestDetailScreen} />
       <Stack.Screen name="Completion" component={CompletionScreen} />
       <Stack.Screen name="Progress" component={ProgressScreen} />
+      <Stack.Screen name="BadgeLog" component={BadgeLogScreen} />
       <Stack.Screen name="Packs" component={PacksScreen} />
       <Stack.Screen name="Settings" component={SettingsScreen} />
     </Stack.Navigator>
