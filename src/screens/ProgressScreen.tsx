@@ -12,7 +12,8 @@ import { allBadges } from '../data/badges';
 import { Decky } from '../components/Decky';
 import { BadgeCard } from '../components/BadgeCard';
 import { LEVEL_LABELS, xpProgressInCurrentLevel } from '../lib/xp';
-import { getBadgeProgress, getNearestLockedBadges } from '../lib/badges';
+import { getBadgeProgress, getNearestLockedBadges, getRecentlyUnlockedBadges } from '../lib/badges';
+import { useBadgeStore } from '../stores/badgeStore';
 import { CompletedQuest } from '../types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Progress'>;
@@ -39,8 +40,11 @@ export function ProgressScreen({ navigation }: Props) {
     totalXp,
     level,
   };
+  const { unlockedAt } = useBadgeStore();
   const nearestLocked = getNearestLockedBadges(badgeInput);
-  const unlockedBadges = getBadgeProgress(badgeInput).filter((bp) => bp.unlocked);
+  const allBadgeProgress = getBadgeProgress(badgeInput);
+  const allUnlocked = allBadgeProgress.filter((bp) => bp.unlocked);
+  const recentUnlocked = getRecentlyUnlockedBadges(badgeInput, unlockedAt, 3);
 
   const renderItem = ({ item }: { item: CompletedQuest }) => {
     const quest = questById[item.questId];
@@ -107,6 +111,19 @@ export function ProgressScreen({ navigation }: Props) {
               </View>
             </View>
 
+            {/* Badge count tile */}
+            <TouchableOpacity
+              style={styles.badgeCountTile}
+              onPress={() => navigation.navigate('BadgeLog')}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.badgeCountIcon}>🏅</Text>
+              <Text style={styles.badgeCountText}>
+                {allUnlocked.length} / {allBadges.length} badges unlocked
+              </Text>
+              <Text style={styles.badgeCountArrow}>→</Text>
+            </TouchableOpacity>
+
             {/* Section 2: Next Badges */}
             <Text style={styles.sectionLabel}>NEXT BADGES</Text>
             {nearestLocked.length === 0 ? (
@@ -124,8 +141,13 @@ export function ProgressScreen({ navigation }: Props) {
             )}
 
             {/* Section 3: Unlocked Badges */}
-            <Text style={styles.sectionLabel}>UNLOCKED BADGES</Text>
-            {unlockedBadges.length === 0 ? (
+            <View style={styles.sectionRow}>
+              <Text style={styles.sectionLabel}>UNLOCKED BADGES</Text>
+              <TouchableOpacity onPress={() => navigation.navigate('BadgeLog')}>
+                <Text style={styles.seeAll}>See all →</Text>
+              </TouchableOpacity>
+            </View>
+            {recentUnlocked.length === 0 ? (
               <View style={styles.infoCard}>
                 <Text style={styles.infoText}>Complete your first quest to unlock badges.</Text>
               </View>
@@ -136,7 +158,7 @@ export function ProgressScreen({ navigation }: Props) {
                 style={styles.unlockedScroll}
                 contentContainerStyle={styles.unlockedContent}
               >
-                {unlockedBadges.map((bp) => (
+                {recentUnlocked.map((bp) => (
                   <BadgeCard key={bp.badge.id} progress={bp} variant="unlocked" />
                 ))}
               </ScrollView>
@@ -247,4 +269,21 @@ const styles = StyleSheet.create({
     position: 'absolute', top: 52, right: 20,
     fontSize: 20, color: 'rgba(255,255,255,0.7)', fontWeight: '700',
   },
+  badgeCountTile: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF0E0',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  badgeCountIcon: { fontSize: 20, marginRight: 10 },
+  badgeCountText: { flex: 1, fontSize: 13, fontWeight: '700', color: '#1a1a1a' },
+  badgeCountArrow: { fontSize: 14, color: '#FF8C42', fontWeight: '700' },
+  sectionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  seeAll: { fontSize: 11, fontWeight: '700', color: '#FF8C42' },
 });
