@@ -1,15 +1,20 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import { Animated, Image, StyleSheet, Text, View } from 'react-native';
 import { useSettingsStore } from '../stores/settingsStore';
 import { Confetti } from './Confetti';
 import { Decky } from './Decky';
+import { allBadges } from '../data/badges';
+import { BADGE_IMAGES } from '../data/badges/badgeImages';
+
+const CELEBRATION_AUTO_DISMISS_MS = 1800;
 
 type CelebrationOverlayProps = {
-  type: 'quest-complete' | 'streak' | 'level-up';
+  type: 'quest-complete' | 'streak' | 'level-up' | 'badge';
   visible: boolean;
   xpAwarded?: number;
   newStreak?: number;
   newLevel?: number;
+  badgeIds?: string[];
   onDismiss?: () => void;
 };
 
@@ -19,6 +24,7 @@ export function CelebrationOverlay({
   xpAwarded,
   newStreak,
   newLevel,
+  badgeIds,
   onDismiss,
 }: CelebrationOverlayProps) {
   const { reducedMotionEnabled } = useSettingsStore();
@@ -58,7 +64,7 @@ export function CelebrationOverlay({
         Animated.timing(translateY, { toValue: 0, duration: 350, useNativeDriver: true }),
       ]);
       animationRef.current.start();
-    } else if (type === 'streak') {
+    } else if (type === 'streak' || type === 'badge') {
       opacity.setValue(0);
       scale.setValue(0.4);
       animationRef.current = Animated.parallel([
@@ -83,7 +89,7 @@ export function CelebrationOverlay({
 
     dismissTimer.current = setTimeout(() => {
       onDismissRef.current?.();
-    }, 1800);
+    }, CELEBRATION_AUTO_DISMISS_MS);
 
     return () => {
       animationRef.current?.stop();
@@ -95,6 +101,21 @@ export function CelebrationOverlay({
   }, [visible, type, reducedMotionEnabled, opacity, translateY, scale]);
 
   if (!visible) return null;
+  if (type === 'badge' && (!badgeIds || badgeIds.length === 0)) return null;
+
+  const renderBadgeIcon = (id: string, boxSize: number, fontSize: number) => {
+    const image = BADGE_IMAGES[id];
+    const badgeDef = allBadges.find((b) => b.id === id);
+    const fallbackEmoji = badgeDef?.emoji ?? '🏅';
+    return (
+      <View style={{ width: boxSize, height: boxSize, alignItems: 'center', justifyContent: 'center' }}>
+        {image
+          ? <Image source={image} style={{ width: boxSize, height: boxSize }} resizeMode="contain" />
+          : <Text style={{ fontSize }}>{fallbackEmoji}</Text>
+        }
+      </View>
+    );
+  };
 
   return (
     <View style={styles.overlay} pointerEvents="none">
@@ -123,6 +144,37 @@ export function CelebrationOverlay({
           <Text style={styles.levelUpSub}>New rank unlocked</Text>
         </Animated.View>
       )}
+
+      {type === 'badge' && badgeIds && (
+        <Animated.View style={[styles.badge, styles.badgeBadge, { opacity, transform: [{ scale }] }]}>
+          {badgeIds.length === 1 ? (
+            <>
+              {renderBadgeIcon(badgeIds[0], 64, 40)}
+              <Text style={styles.badgeUnlockHeadline}>Badge unlocked!</Text>
+              <Text style={styles.badgeUnlockName}>
+                {allBadges.find((b) => b.id === badgeIds[0])?.name ?? badgeIds[0]}
+              </Text>
+            </>
+          ) : (
+            <>
+              <Text style={styles.badgeUnlockHeadline}>Badges unlocked!</Text>
+              <View style={styles.badgeTileRow}>
+                {badgeIds.slice(0, 3).map((id) => (
+                  <View key={id} style={styles.badgeTile}>
+                    {renderBadgeIcon(id, 48, 28)}
+                    <Text style={styles.badgeTileName}>
+                      {allBadges.find((b) => b.id === id)?.name ?? id}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+              {badgeIds.length > 3 && (
+                <Text style={styles.badgeMore}>+{badgeIds.length - 3} more</Text>
+              )}
+            </>
+          )}
+        </Animated.View>
+      )}
     </View>
   );
 }
@@ -147,4 +199,13 @@ const styles = StyleSheet.create({
   levelUpEmoji: { fontSize: 52 },
   levelUpText: { fontSize: 28, fontWeight: '900', color: '#FF8C42' },
   levelUpSub: { fontSize: 13, color: '#888' },
+  badgeBadge: { paddingVertical: 24, paddingHorizontal: 36 },
+  badgeUnlockHeadline: { fontSize: 20, fontWeight: '800', color: '#1a1a1a' },
+  badgeUnlockName: { fontSize: 13, color: '#888', textAlign: 'center' },
+  badgeTileRow: {
+    flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 12, marginTop: 4,
+  },
+  badgeTile: { alignItems: 'center', gap: 4, maxWidth: 72 },
+  badgeTileName: { fontSize: 11, color: '#888', textAlign: 'center' },
+  badgeMore: { fontSize: 12, color: '#aaa', marginTop: 4 },
 });
