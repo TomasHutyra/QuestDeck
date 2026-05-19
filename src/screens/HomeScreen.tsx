@@ -17,6 +17,7 @@ import { XPBar } from '../components/XPBar';
 import { MoodButton } from '../components/MoodButton';
 import { Decky } from '../components/Decky';
 import { MoodMeta } from '../types';
+import { BADGE_IMAGES } from '../data/badges/badgeImages';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
@@ -67,10 +68,16 @@ export function HomeScreen({ navigation }: Props) {
       {nextBadge && (
         <TouchableOpacity
           style={styles.badgeTeaser}
-          onPress={() => navigation.navigate('Progress')}
+          onPress={() => navigation.navigate('BadgeLog')}
           activeOpacity={0.8}
         >
-          <Text style={styles.badgeTeaserEmoji}>{nextBadge.badge.emoji}</Text>
+          <View style={styles.badgeTeaserIconBox}>
+            {BADGE_IMAGES[nextBadge.badge.id] ? (
+              <Image source={BADGE_IMAGES[nextBadge.badge.id]} style={styles.badgeTeaserImage} />
+            ) : (
+              <Text style={styles.badgeTeaserEmoji}>{nextBadge.badge.emoji}</Text>
+            )}
+          </View>
           <View style={styles.badgeTeaserInfo}>
             <Text style={styles.badgeTeaserName}>Next: {nextBadge.badge.name}</Text>
             <Text style={styles.badgeTeaserCount}>{nextBadge.current} / {nextBadge.target}</Text>
@@ -133,7 +140,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  badgeTeaserEmoji: { fontSize: 18, marginRight: 8 },
+  badgeTeaserIconBox: {
+    width: 28,
+    height: 28,
+    marginRight: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badgeTeaserImage: { width: 28, height: 28, borderRadius: 4 },
+  badgeTeaserEmoji: { fontSize: 18 },
   badgeTeaserInfo: { flex: 1 },
   badgeTeaserName: { fontSize: 11, fontWeight: '700', color: '#1a1a1a' },
   badgeTeaserCount: { fontSize: 10, color: '#FF8C42', marginTop: 1 },
