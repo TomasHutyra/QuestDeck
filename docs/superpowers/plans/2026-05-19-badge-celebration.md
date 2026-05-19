@@ -4,7 +4,7 @@
 
 **Goal:** Show a spring-bounce celebration overlay when a quest completion unlocks one or more badges, sequenced after any streak or level-up overlay.
 
-**Architecture:** Four small, ordered changes: (1) thread `newlyUnlockedBadgeIds` through the result type and action, (2) add haptic feedback function, (3) add `'badge'` type to `CelebrationOverlay`, (4) add a second overlay state + sequencing to `CompletionScreen`. Tests are updated alongside task 1.
+**Architecture:** Four small, ordered changes: (1) thread `newlyUnlockedBadgeIds` through the result type and action, (2) add haptic feedback function, (3) add `'badge'` type to `CelebrationOverlay` via targeted edits (not a full file replace), (4) add a second overlay state + sequencing to `CompletionScreen`. Tests are updated alongside task 1.
 
 **Tech Stack:** React Native / Expo, TypeScript, Zustand, expo-haptics, `Animated` API.
 
@@ -18,7 +18,7 @@
 | Modify | `src/actions/completeQuest.ts` | Return `newlyUnlockedBadgeIds` in both branches |
 | Modify | `__tests__/actions/completeQuestBadges.test.ts` | Assert `newlyUnlockedBadgeIds`; add multiple-ids test |
 | Modify | `src/lib/feedback.ts` | Add `playBadgeUnlockedFeedback()` |
-| Modify | `src/components/CelebrationOverlay.tsx` | Add `'badge'` type, `badgeIds` prop, constant, rendering |
+| Modify | `src/components/CelebrationOverlay.tsx` | Add `'badge'` type via targeted edits — preserve all existing behavior |
 | Modify | `src/screens/CompletionScreen.tsx` | Add `badgeOverlayVisible`, `badgeOverlayQueuedRef`, sequencing |
 
 ---
@@ -30,9 +30,11 @@
 - Modify: `src/actions/completeQuest.ts`
 - Modify: `__tests__/actions/completeQuestBadges.test.ts`
 
+**Note on test quest IDs:** `questEasy` has `id: 'test-quest-easy'`, which is distinct from the pre-seeded `questId: 'q1'` and `questId: 'q2'` values. No separate fixture is needed — `questEasy` is safe to use in all tests below.
+
 - [ ] **Step 1: Update `CompleteQuestResult` in `src/types/index.ts`**
 
-Replace the `CompleteQuestResult` type (lines 49–61):
+The file currently has `CompleteQuestResult` ending with `streakExtended: boolean;`. Add one field:
 
 ```ts
 export type CompleteQuestResult = {
@@ -51,9 +53,9 @@ export type CompleteQuestResult = {
 };
 ```
 
-- [ ] **Step 2: Add `newlyUnlockedBadgeIds` to `completeQuest` return values in `src/actions/completeQuest.ts`**
+- [ ] **Step 2: Add `newlyUnlockedBadgeIds` to both return statements in `src/actions/completeQuest.ts`**
 
-In the early-return branch (already_completed, lines 16–29), add the field:
+The already-completed early return currently ends with `streakExtended: false,`. Add the new field:
 
 ```ts
   if (completedQuests.some((cq) => cq.questId === quest.id)) {
@@ -74,7 +76,7 @@ In the early-return branch (already_completed, lines 16–29), add the field:
   }
 ```
 
-In the successful-completion return (lines 94–106), add the field:
+The successful-completion return currently ends with `streakExtended: newStreak > currentStreak,`. Add the new field:
 
 ```ts
   return {
@@ -93,9 +95,9 @@ In the successful-completion return (lines 94–106), add the field:
   };
 ```
 
-- [ ] **Step 3: Update tests to assert `newlyUnlockedBadgeIds` and add new test case**
+- [ ] **Step 3: Replace the `completeQuest badge recording` describe block in `__tests__/actions/completeQuestBadges.test.ts`**
 
-Replace the entire `completeQuest badge recording` describe block in `__tests__/actions/completeQuestBadges.test.ts` (lines 81–161) with the following. The `getRecentlyUnlockedBadges` describe block (lines 32–77) is unchanged.
+The `getRecentlyUnlockedBadges` describe block (lines 32–77) is unchanged. Replace everything from `describe('completeQuest badge recording'` to the end of the file with:
 
 ```ts
 describe('completeQuest badge recording', () => {
@@ -119,7 +121,8 @@ describe('completeQuest badge recording', () => {
     });
     useProgressStore.setState({ totalXp: 20, level: 1, currentStreak: 0, longestStreak: 0, lastCompletedDate: null });
 
-    const result = completeQuest(questEasy); // quest #3
+    // questEasy.id = 'test-quest-easy' — distinct from pre-seeded q1/q2, so not already_completed
+    const result = completeQuest(questEasy);
 
     const { unlockedAt } = useBadgeStore.getState();
     expect(unlockedAt['getting_started']).toBeDefined();
@@ -127,9 +130,9 @@ describe('completeQuest badge recording', () => {
   });
 
   it('already_completed does not record any badge unlocks and returns empty newlyUnlockedBadgeIds', () => {
-    completeQuest(questEasy);           // first completion — records first_quest
-    useBadgeStore.setState({ unlockedAt: {} }); // reset badge store
-    const result = completeQuest(questEasy); // already_completed — must not touch badge store
+    completeQuest(questEasy);                    // first completion — records first_quest
+    useBadgeStore.setState({ unlockedAt: {} });  // reset badge store
+    const result = completeQuest(questEasy);     // already_completed — must not touch badge store
 
     expect(Object.keys(useBadgeStore.getState().unlockedAt)).toHaveLength(0);
     expect(result.newlyUnlockedBadgeIds).toEqual([]);
@@ -146,7 +149,8 @@ describe('completeQuest badge recording', () => {
     useProgressStore.setState({ totalXp: 10, level: 1, currentStreak: 1, longestStreak: 1, lastCompletedDate: null });
     useBadgeStore.setState({ unlockedAt: { first_quest: '2026-01-01T00:00:00.000Z' } });
 
-    const result = completeQuest(questEasy); // quest #2 — first_quest already unlocked before
+    // quest #2 — first_quest (target 1) was already unlocked before; should not appear in result
+    const result = completeQuest(questEasy);
 
     expect(useBadgeStore.getState().unlockedAt['first_quest']).toBe('2026-01-01T00:00:00.000Z');
     expect(result.newlyUnlockedBadgeIds).not.toContain('first_quest');
@@ -173,7 +177,8 @@ describe('completeQuest badge recording', () => {
       totalXp: 20, level: 1, currentStreak: 2, longestStreak: 2, lastCompletedDate: yesterdayStr,
     });
 
-    completeQuest(questEasy); // triggers count=3 AND streak=3 simultaneously
+    // quest #3 with streak 2→3: unlocks getting_started (count≥3) AND three_day_streak (streak≥3)
+    completeQuest(questEasy);
 
     const { unlockedAt } = useBadgeStore.getState();
     expect(unlockedAt['getting_started']).toBeDefined();
@@ -182,7 +187,6 @@ describe('completeQuest badge recording', () => {
   });
 
   it('a single completion can return multiple newlyUnlockedBadgeIds', () => {
-    // quest #3 with 2→3 day streak → both getting_started (count≥3) and three_day_streak (streak≥3) unlock
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayStr = [
@@ -203,6 +207,7 @@ describe('completeQuest badge recording', () => {
       totalXp: 20, level: 1, currentStreak: 2, longestStreak: 2, lastCompletedDate: yesterdayStr,
     });
 
+    // quest #3 with streak 2→3: getting_started (count≥3) + three_day_streak (streak≥3) both unlock
     const result = completeQuest(questEasy);
 
     expect(result.newlyUnlockedBadgeIds).toContain('getting_started');
@@ -218,7 +223,7 @@ describe('completeQuest badge recording', () => {
 npm test -- --testPathPattern=completeQuestBadges
 ```
 
-Expected: all 7 tests in `completeQuestBadges.test.ts` pass (2 `getRecentlyUnlockedBadges` + 6 `completeQuest badge recording`).
+Expected: all 8 tests pass (2 `getRecentlyUnlockedBadges` + 6 `completeQuest badge recording`).
 
 - [ ] **Step 5: Commit**
 
@@ -234,9 +239,9 @@ git commit -m "feat(result): add newlyUnlockedBadgeIds to CompleteQuestResult"
 **Files:**
 - Modify: `src/lib/feedback.ts`
 
-- [ ] **Step 1: Add the function**
+- [ ] **Step 1: Append after `playAlreadyCompletedFeedback`**
 
-Append after `playAlreadyCompletedFeedback` (after line 62):
+The file currently ends after `playAlreadyCompletedFeedback`. Append:
 
 ```ts
 export async function playBadgeUnlockedFeedback(): Promise<void> {
@@ -253,24 +258,54 @@ git commit -m "feat(feedback): add playBadgeUnlockedFeedback (heavy haptic only)
 
 ---
 
-## Task 3: Add `'badge'` type to `CelebrationOverlay`
+## Task 3: Add `'badge'` type to `CelebrationOverlay` via targeted edits
 
 **Files:**
 - Modify: `src/components/CelebrationOverlay.tsx`
 
-- [ ] **Step 1: Replace the entire file with the updated version**
+**IMPORTANT:** Do NOT replace the whole file. Use Edit tool to apply each change below. Preserve all existing behavior for quest-complete, streak, level-up, reducedMotion, timers, Confetti, Decky, and styling.
 
+- [ ] **Step 1: Add `Image` to the react-native import**
+
+Old:
 ```tsx
-import React, { useEffect, useRef } from 'react';
+import { Animated, StyleSheet, Text, View } from 'react-native';
+```
+New:
+```tsx
 import { Animated, Image, StyleSheet, Text, View } from 'react-native';
-import { useSettingsStore } from '../stores/settingsStore';
-import { Confetti } from './Confetti';
+```
+
+- [ ] **Step 2: Add badge-data imports and the auto-dismiss constant after the existing imports**
+
+Old (the last import line in the file):
+```tsx
+import { Decky } from './Decky';
+```
+New:
+```tsx
 import { Decky } from './Decky';
 import { allBadges } from '../data/badges';
 import { BADGE_IMAGES } from '../data/badges/badgeImages';
 
 const CELEBRATION_AUTO_DISMISS_MS = 1800;
+```
 
+- [ ] **Step 3: Update the props type to add `'badge'` and `badgeIds`**
+
+Old:
+```tsx
+type CelebrationOverlayProps = {
+  type: 'quest-complete' | 'streak' | 'level-up';
+  visible: boolean;
+  xpAwarded?: number;
+  newStreak?: number;
+  newLevel?: number;
+  onDismiss?: () => void;
+};
+```
+New:
+```tsx
 type CelebrationOverlayProps = {
   type: 'quest-complete' | 'streak' | 'level-up' | 'badge';
   visible: boolean;
@@ -280,7 +315,23 @@ type CelebrationOverlayProps = {
   badgeIds?: string[];
   onDismiss?: () => void;
 };
+```
 
+- [ ] **Step 4: Add `badgeIds` to the component function signature**
+
+Old:
+```tsx
+export function CelebrationOverlay({
+  type,
+  visible,
+  xpAwarded,
+  newStreak,
+  newLevel,
+  onDismiss,
+}: CelebrationOverlayProps) {
+```
+New:
+```tsx
 export function CelebrationOverlay({
   type,
   visible,
@@ -290,110 +341,81 @@ export function CelebrationOverlay({
   badgeIds,
   onDismiss,
 }: CelebrationOverlayProps) {
-  const { reducedMotionEnabled } = useSettingsStore();
-  const opacity = useRef(new Animated.Value(0)).current;
-  const translateY = useRef(new Animated.Value(10)).current;
-  const scale = useRef(new Animated.Value(0.6)).current;
-  const dismissTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const onDismissRef = useRef(onDismiss);
-  const animationRef = useRef<Animated.CompositeAnimation | null>(null);
+```
 
-  useEffect(() => { onDismissRef.current = onDismiss; });
+- [ ] **Step 5: Add `'badge'` to the streak animation branch**
 
-  useEffect(() => {
-    if (dismissTimer.current) {
-      clearTimeout(dismissTimer.current);
-      dismissTimer.current = null;
-    }
-
-    if (!visible) {
-      opacity.setValue(0);
-      translateY.setValue(10);
-      scale.setValue(0.6);
-      return;
-    }
-
-    animationRef.current?.stop();
-
-    if (reducedMotionEnabled) {
-      opacity.setValue(1);
-      translateY.setValue(0);
-      scale.setValue(1);
-    } else if (type === 'quest-complete') {
-      opacity.setValue(0);
-      translateY.setValue(16);
-      animationRef.current = Animated.parallel([
-        Animated.timing(opacity, { toValue: 1, duration: 350, useNativeDriver: true }),
-        Animated.timing(translateY, { toValue: 0, duration: 350, useNativeDriver: true }),
-      ]);
-      animationRef.current.start();
+Old:
+```tsx
+    } else if (type === 'streak') {
+```
+New:
+```tsx
     } else if (type === 'streak' || type === 'badge') {
-      opacity.setValue(0);
-      scale.setValue(0.4);
-      animationRef.current = Animated.parallel([
-        Animated.timing(opacity, { toValue: 1, duration: 150, useNativeDriver: true }),
-        Animated.spring(scale, {
-          toValue: 1, damping: 6, stiffness: 200, useNativeDriver: true,
-        }),
-      ]);
-      animationRef.current.start();
-    } else if (type === 'level-up') {
-      opacity.setValue(0);
-      scale.setValue(0.7);
-      animationRef.current = Animated.sequence([
-        Animated.parallel([
-          Animated.timing(opacity, { toValue: 1, duration: 300, useNativeDriver: true }),
-          Animated.spring(scale, { toValue: 1.05, damping: 8, stiffness: 180, useNativeDriver: true }),
-        ]),
-        Animated.spring(scale, { toValue: 1, damping: 12, stiffness: 200, useNativeDriver: true }),
-      ]);
-      animationRef.current.start();
-    }
+```
 
+- [ ] **Step 6: Replace the hardcoded `1800` with the constant**
+
+Old:
+```tsx
+    dismissTimer.current = setTimeout(() => {
+      onDismissRef.current?.();
+    }, 1800);
+```
+New:
+```tsx
     dismissTimer.current = setTimeout(() => {
       onDismissRef.current?.();
     }, CELEBRATION_AUTO_DISMISS_MS);
+```
 
-    return () => {
-      animationRef.current?.stop();
-      if (dismissTimer.current) {
-        clearTimeout(dismissTimer.current);
-        dismissTimer.current = null;
-      }
-    };
-  }, [visible, type, reducedMotionEnabled, opacity, translateY, scale]);
+- [ ] **Step 7: Add badge early-return guard and the `renderBadgeIcon` helper**
 
+Old:
+```tsx
+  if (!visible) return null;
+
+  return (
+```
+New:
+```tsx
   if (!visible) return null;
   if (type === 'badge' && (!badgeIds || badgeIds.length === 0)) return null;
 
-  const renderBadgeIcon = (id: string, size: number, fontSize: number) => {
+  const renderBadgeIcon = (id: string, boxSize: number, fontSize: number) => {
     const image = BADGE_IMAGES[id];
-    if (image) {
-      return <Image source={image} style={{ width: size, height: size }} />;
-    }
-    return <Text style={{ fontSize }}>🏅</Text>;
+    const badgeDef = allBadges.find((b) => b.id === id);
+    const fallbackEmoji = badgeDef?.emoji ?? '🏅';
+    return (
+      <View style={{ width: boxSize, height: boxSize, alignItems: 'center', justifyContent: 'center' }}>
+        {image
+          ? <Image source={image} style={{ width: boxSize, height: boxSize }} resizeMode="contain" />
+          : <Text style={{ fontSize }}>{fallbackEmoji}</Text>
+        }
+      </View>
+    );
   };
 
   return (
-    <View style={styles.overlay} pointerEvents="none">
-      {type === 'quest-complete' && (
-        <>
-          <Confetti active={visible} />
-          <Animated.View style={[styles.badge, { opacity, transform: [{ translateY }] }]}>
-            <Text style={styles.badgeLabel}>You earned</Text>
-            <Text style={styles.xpText}>+{xpAwarded ?? 0} XP</Text>
-          </Animated.View>
-        </>
-      )}
+```
 
-      {type === 'streak' && (
-        <Animated.View style={[styles.badge, styles.streakBadge, { opacity, transform: [{ scale }] }]}>
-          <Decky pose="streak" size={72} />
-          <Text style={styles.streakText}>{newStreak}-day streak!</Text>
-          <Text style={styles.streakSub}>Keep it going</Text>
+- [ ] **Step 8: Add badge JSX block inside the overlay View, after the level-up block**
+
+The level-up block currently ends with:
+```tsx
+      {type === 'level-up' && (
+        <Animated.View style={[styles.badge, styles.levelUpBadge, { opacity, transform: [{ scale }] }]}>
+          <Text style={styles.levelUpEmoji}>⬆️</Text>
+          <Text style={styles.levelUpText}>Level {newLevel}!</Text>
+          <Text style={styles.levelUpSub}>New rank unlocked</Text>
         </Animated.View>
       )}
-
+    </View>
+  );
+}
+```
+Replace with:
+```tsx
       {type === 'level-up' && (
         <Animated.View style={[styles.badge, styles.levelUpBadge, { opacity, transform: [{ scale }] }]}>
           <Text style={styles.levelUpEmoji}>⬆️</Text>
@@ -435,28 +457,19 @@ export function CelebrationOverlay({
     </View>
   );
 }
+```
 
-const styles = StyleSheet.create({
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: 'center', justifyContent: 'center', zIndex: 10,
-  },
-  badge: {
-    backgroundColor: '#FFF3E8', borderRadius: 20, paddingHorizontal: 32, paddingVertical: 20,
-    alignItems: 'center', borderWidth: 2, borderColor: '#FFD0A0', gap: 4,
-    elevation: 8, shadowColor: '#FF8C42', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2, shadowRadius: 8,
-  },
-  streakBadge: { paddingVertical: 24, paddingHorizontal: 40 },
-  levelUpBadge: { paddingVertical: 28, paddingHorizontal: 44 },
-  badgeBadge: { paddingVertical: 24, paddingHorizontal: 36 },
-  badgeLabel: { fontSize: 11, color: '#aaa' },
-  xpText: { fontSize: 40, fontWeight: '900', color: '#FF8C42' },
-  streakText: { fontSize: 22, fontWeight: '800', color: '#1a1a1a' },
-  streakSub: { fontSize: 12, color: '#aaa' },
-  levelUpEmoji: { fontSize: 52 },
-  levelUpText: { fontSize: 28, fontWeight: '900', color: '#FF8C42' },
+- [ ] **Step 9: Add new styles to the end of `StyleSheet.create`**
+
+Old (last style entry):
+```tsx
   levelUpSub: { fontSize: 13, color: '#888' },
+});
+```
+New:
+```tsx
+  levelUpSub: { fontSize: 13, color: '#888' },
+  badgeBadge: { paddingVertical: 24, paddingHorizontal: 36 },
   badgeUnlockHeadline: { fontSize: 20, fontWeight: '800', color: '#1a1a1a' },
   badgeUnlockName: { fontSize: 13, color: '#888', textAlign: 'center' },
   badgeTileRow: {
@@ -468,7 +481,7 @@ const styles = StyleSheet.create({
 });
 ```
 
-- [ ] **Step 2: Type-check**
+- [ ] **Step 10: Type-check**
 
 ```
 npx tsc --noEmit
@@ -476,7 +489,7 @@ npx tsc --noEmit
 
 Expected: no errors.
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 11: Commit**
 
 ```
 git add src/components/CelebrationOverlay.tsx
@@ -490,10 +503,26 @@ git commit -m "feat(celebration): add badge overlay type with spring animation"
 **Files:**
 - Modify: `src/screens/CompletionScreen.tsx`
 
-The existing file is 362 lines. Apply the changes below in order.
+The existing file is 362 lines. Apply the changes below in order using the Edit tool.
 
-- [ ] **Step 1: Add `playBadgeUnlockedFeedback` to the feedback import (lines 15–19)**
+**Sequencing rules encoded here:**
+- level-up or streak: show primary overlay first → on dismiss, if badges, show badge overlay
+- badges only (no level-up, no streak): skip quest-complete → show badge overlay directly
+- no badges, no streak, no level-up: show quest-complete overlay (unchanged)
+- guard: `badgeOverlayQueuedRef` prevents badge overlay from being triggered twice
 
+- [ ] **Step 1: Add `playBadgeUnlockedFeedback` to the feedback import**
+
+Old:
+```tsx
+import {
+  playAlreadyCompletedFeedback,
+  playLevelUpFeedback,
+  playQuestCompletedFeedback,
+  playStreakExtendedFeedback,
+} from '../lib/feedback';
+```
+New:
 ```tsx
 import {
   playAlreadyCompletedFeedback,
@@ -504,54 +533,131 @@ import {
 } from '../lib/feedback';
 ```
 
-- [ ] **Step 2: Add `badgeOverlayVisible` state and `badgeOverlayQueuedRef` ref**
+- [ ] **Step 2: Add `badgeOverlayVisible` state after `overlayVisible`**
 
-After line 73 (`const [overlayVisible, setOverlayVisible] = useState(false);`), add:
-
+Old:
 ```tsx
-const [badgeOverlayVisible, setBadgeOverlayVisible] = useState(false);
+  const [overlayVisible, setOverlayVisible] = useState(false);
+  const [promptVisible, setPromptVisible] = useState(false);
+```
+New:
+```tsx
+  const [overlayVisible, setOverlayVisible] = useState(false);
+  const [badgeOverlayVisible, setBadgeOverlayVisible] = useState(false);
+  const [promptVisible, setPromptVisible] = useState(false);
 ```
 
-After line 77 (`const hasPlayedRef = useRef(false);`), add:
+- [ ] **Step 3: Add `badgeOverlayQueuedRef` after `hasPlayedRef`**
 
+Old:
 ```tsx
-const badgeOverlayQueuedRef = useRef(false);
+  const hasPlayedRef = useRef(false);
+  const promptShownRef = useRef(false);
+```
+New:
+```tsx
+  const hasPlayedRef = useRef(false);
+  const badgeOverlayQueuedRef = useRef(false);
+  const promptShownRef = useRef(false);
 ```
 
-- [ ] **Step 3: Replace `handleMarkDone` (lines 115–135)**
+- [ ] **Step 4: Replace `handleMarkDone`**
 
+Old:
 ```tsx
-const handleMarkDone = () => {
-  if (!quest) return;
-  const r = completeQuest(quest);
-  setResult(r);
-  badgeOverlayQueuedRef.current = false;
+  const handleMarkDone = () => {
+    if (!quest) return;
+    const r = completeQuest(quest);
+    setResult(r);
 
-  if (!hasPlayedRef.current) {
-    hasPlayedRef.current = true;
-    if (r.status === 'already_completed') {
-      playAlreadyCompletedFeedback();
-    } else if (r.levelUp) {
-      playLevelUpFeedback();
-      setOverlayVisible(true);
-    } else if (r.streakExtended) {
-      playStreakExtendedFeedback();
-      setOverlayVisible(true);
-    } else if (r.newlyUnlockedBadgeIds.length > 0) {
-      badgeOverlayQueuedRef.current = true;
-      playBadgeUnlockedFeedback();
-      setBadgeOverlayVisible(true);
-    } else {
-      playQuestCompletedFeedback();
-      setOverlayVisible(true);
+    if (!hasPlayedRef.current) {
+      hasPlayedRef.current = true;
+      if (r.status === 'already_completed') {
+        playAlreadyCompletedFeedback();
+      } else if (r.levelUp) {
+        playLevelUpFeedback();
+        setOverlayVisible(true);
+      } else if (r.streakExtended) {
+        playStreakExtendedFeedback();
+        setOverlayVisible(true);
+      } else {
+        playQuestCompletedFeedback();
+        setOverlayVisible(true);
+      }
     }
-  }
-};
+  };
+```
+New:
+```tsx
+  const handleMarkDone = () => {
+    if (!quest) return;
+    setOverlayVisible(false);
+    setBadgeOverlayVisible(false);
+    badgeOverlayQueuedRef.current = false;
+
+    const r = completeQuest(quest);
+    setResult(r);
+
+    if (!hasPlayedRef.current) {
+      hasPlayedRef.current = true;
+      if (r.status === 'already_completed') {
+        void playAlreadyCompletedFeedback();
+      } else if (r.levelUp) {
+        void playLevelUpFeedback();
+        setOverlayVisible(true);
+      } else if (r.streakExtended) {
+        void playStreakExtendedFeedback();
+        setOverlayVisible(true);
+      } else if (r.newlyUnlockedBadgeIds.length > 0) {
+        badgeOverlayQueuedRef.current = true;
+        void playBadgeUnlockedFeedback();
+        setBadgeOverlayVisible(true);
+      } else {
+        void playQuestCompletedFeedback();
+        setOverlayVisible(true);
+      }
+    }
+  };
 ```
 
-- [ ] **Step 4: Update the first `CelebrationOverlay`'s `onDismiss` to chain to badge overlay**
+- [ ] **Step 5: Update the first `CelebrationOverlay`'s `onDismiss` to chain to badge overlay**
 
-Replace lines 301–310:
+Old:
+```tsx
+        <CelebrationOverlay
+          type={celebType}
+          visible={overlayVisible}
+          xpAwarded={result.xpAwarded}
+          newStreak={result.streakAfter}
+          newLevel={result.levelAfter}
+          onDismiss={() => setOverlayVisible(false)}
+        />
+```
+New:
+```tsx
+        <CelebrationOverlay
+          type={celebType}
+          visible={overlayVisible}
+          xpAwarded={result.xpAwarded}
+          newStreak={result.streakAfter}
+          newLevel={result.levelAfter}
+          onDismiss={() => {
+            setOverlayVisible(false);
+            if (
+              result.newlyUnlockedBadgeIds.length > 0 &&
+              !badgeOverlayQueuedRef.current
+            ) {
+              badgeOverlayQueuedRef.current = true;
+              void playBadgeUnlockedFeedback();
+              setBadgeOverlayVisible(true);
+            }
+          }}
+        />
+```
+
+- [ ] **Step 6: Add badge `CelebrationOverlay` after the first one**
+
+The current file ends the SafeAreaView with the first CelebrationOverlay and then closes `</SafeAreaView>`. The first CelebrationOverlay block currently is wrapped as:
 
 ```tsx
       {celebType !== null && (
@@ -568,29 +674,16 @@ Replace lines 301–310:
               !badgeOverlayQueuedRef.current
             ) {
               badgeOverlayQueuedRef.current = true;
-              playBadgeUnlockedFeedback();
+              void playBadgeUnlockedFeedback();
               setBadgeOverlayVisible(true);
             }
           }}
         />
       )}
+    </SafeAreaView>
 ```
 
-- [ ] **Step 5: Add badge `CelebrationOverlay` instance after the first one**
-
-After the closing `)}` of the first `CelebrationOverlay` block, add:
-
-```tsx
-      <CelebrationOverlay
-        type="badge"
-        visible={badgeOverlayVisible}
-        badgeIds={result.newlyUnlockedBadgeIds}
-        onDismiss={() => setBadgeOverlayVisible(false)}
-      />
-```
-
-The render block for the two overlays should look like:
-
+Replace with:
 ```tsx
       {celebType !== null && (
         <CelebrationOverlay
@@ -606,7 +699,7 @@ The render block for the two overlays should look like:
               !badgeOverlayQueuedRef.current
             ) {
               badgeOverlayQueuedRef.current = true;
-              playBadgeUnlockedFeedback();
+              void playBadgeUnlockedFeedback();
               setBadgeOverlayVisible(true);
             }
           }}
@@ -618,11 +711,12 @@ The render block for the two overlays should look like:
         badgeIds={result.newlyUnlockedBadgeIds}
         onDismiss={() => setBadgeOverlayVisible(false)}
       />
+    </SafeAreaView>
 ```
 
-Note: the badge `CelebrationOverlay` is rendered unconditionally — when `badgeOverlayVisible` is false, `CelebrationOverlay` returns null internally. When `badgeIds` is empty, the badge type also returns null. So no extra guards are needed.
+The badge overlay renders unconditionally — `CelebrationOverlay` returns null internally when `visible` is false or `badgeIds` is empty.
 
-- [ ] **Step 6: Type-check**
+- [ ] **Step 7: Type-check**
 
 ```
 npx tsc --noEmit
@@ -630,7 +724,7 @@ npx tsc --noEmit
 
 Expected: no errors.
 
-- [ ] **Step 7: Run full test suite**
+- [ ] **Step 8: Run all tests**
 
 ```
 npm test
@@ -638,7 +732,7 @@ npm test
 
 Expected: all tests pass.
 
-- [ ] **Step 8: Commit**
+- [ ] **Step 9: Commit**
 
 ```
 git add src/screens/CompletionScreen.tsx
@@ -671,7 +765,7 @@ Expected: all tests pass.
 npm run validate:quests
 ```
 
-Expected: `All quests valid.` (or similar success message).
+Expected: no errors.
 
 - [ ] **Step 4: Validate badge data**
 
@@ -679,4 +773,4 @@ Expected: `All quests valid.` (or similar success message).
 npm run validate:badges
 ```
 
-Expected: `All badges valid.` (or similar success message).
+Expected: no errors.
