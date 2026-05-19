@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "main": "index.ts",
   "scripts": {
-    "codegen:badge-images": "ts-node --project scripts/tsconfig.scripts.json scripts/generateBadgeImages.ts",
-    "prestart": "npm run codegen:badge-images",
+    "codegen:badge-images": "node scripts/generateBadgeImages.js",
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
