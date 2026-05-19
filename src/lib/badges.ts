@@ -90,3 +90,22 @@ export function getNearestLockedBadges(input: BadgeEngineInput, count = 3): Badg
     })
     .slice(0, count);
 }
+
+export function getRecentlyUnlockedBadges(
+  input: BadgeEngineInput,
+  unlockedAt: Record<string, string>,
+  count: number,
+): BadgeProgress[] {
+  return getBadgeProgress(input)
+    .filter((bp) => bp.unlocked)
+    .sort((a, b) => {
+      const tsA = unlockedAt[a.badge.id] ?? '';
+      const tsB = unlockedAt[b.badge.id] ?? '';
+      if (tsB !== tsA) return tsB.localeCompare(tsA);
+      // stable tie-break: preserve badge definition order
+      const idxA = input.badgeDefinitions.findIndex((bd) => bd.id === a.badge.id);
+      const idxB = input.badgeDefinitions.findIndex((bd) => bd.id === b.badge.id);
+      return idxA - idxB;
+    })
+    .slice(0, count);
+}
