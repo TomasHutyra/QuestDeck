@@ -42,6 +42,8 @@ import { NotificationPromptCard } from '../components/NotificationPromptCard';
 import { StoreReviewPromptCard } from '../components/StoreReviewPromptCard';
 import { Decky } from '../components/Decky';
 import { CompleteQuestResult } from '../types';
+import { useScreenState } from '../hooks/useScreenState';
+import { hasMetLockMinimum } from '../lib/questLockGate';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Completion'>;
 
@@ -76,6 +78,20 @@ export function CompletionScreen({ navigation, route }: Props) {
   const [promptVisible, setPromptVisible] = useState(false);
   const [reviewPromptVisible, setReviewPromptVisible] = useState(false);
   const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [lockState, setLockState] = useState<'waiting' | 'too-quick' | 'ready'>('waiting');
+
+  useScreenState({
+    enabled: result === null && !!quest,
+    onScreenReturn: (snapshot) => {
+      if (snapshot.lastScreenOffAt === null) return; // no lock happened yet
+      if (hasMetLockMinimum(snapshot.lastScreenOffAt, snapshot.lastScreenOnAt)) {
+        setLockState('ready');
+      } else {
+        setLockState('too-quick');
+      }
+    },
+  });
+
   const hasPlayedRef = useRef(false);
   const badgeOverlayQueuedRef = useRef(false);
   const promptShownRef = useRef(false);
@@ -117,6 +133,7 @@ export function CompletionScreen({ navigation, route }: Props) {
 
   const handleMarkDone = () => {
     if (!quest) return;
+    if (lockState !== 'ready') return;
     setOverlayVisible(false);
     setBadgeOverlayVisible(false);
     badgeOverlayQueuedRef.current = false;
@@ -225,11 +242,44 @@ export function CompletionScreen({ navigation, route }: Props) {
   }
 
   if (result === null) {
+    if (lockState === 'waiting') {
+      return (
+        <SafeAreaView style={styles.safe}>
+          <View style={styles.center}>
+            <Decky pose="idle" size={80} />
+            <Text style={styles.lockTitle}>Your quest has started.</Text>
+            <Text style={styles.lockDesc}>Lock your phone and go do it.</Text>
+            <Text style={styles.lockDesc}>Come back when you're done.</Text>
+            <TouchableOpacity style={styles.backLink} onPress={handleBackToHome}>
+              <Text style={styles.backLinkText}>← Back to Home</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      );
+    }
+
+    if (lockState === 'too-quick') {
+      return (
+        <SafeAreaView style={styles.safe}>
+          <View style={styles.center}>
+            <Decky pose="thinking" size={80} />
+            <Text style={styles.lockTitle}>That was quick.</Text>
+            <Text style={styles.lockDesc}>Give it a little more real-world time.</Text>
+            <Text style={styles.lockDesc}>Come back when you're done.</Text>
+            <TouchableOpacity style={styles.backLink} onPress={handleBackToHome}>
+              <Text style={styles.backLinkText}>← Back to Home</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      );
+    }
+
+    // lockState === 'ready'
     return (
       <SafeAreaView style={styles.safe}>
         <View style={styles.center}>
-          <Text style={styles.questTitle}>{quest.title}</Text>
-          <Text style={styles.questDesc}>Complete the quest, then mark it done.</Text>
+          <Text style={styles.lockTitle}>Welcome back.</Text>
+          <Text style={styles.lockDesc}>Ready to log your adventure?</Text>
           <TouchableOpacity style={styles.doneBtn} onPress={handleMarkDone} activeOpacity={0.85}>
             <Text style={styles.doneBtnText}>Mark as done ✓</Text>
           </TouchableOpacity>
@@ -348,6 +398,8 @@ const styles = StyleSheet.create({
   completeTitle: { fontSize: 22, fontWeight: '900', color: '#1a1a1a' },
   questTitle: { fontSize: 16, fontWeight: '700', color: '#1a1a1a' },
   questDesc: { fontSize: 13, color: '#888', textAlign: 'center' },
+  lockTitle: { fontSize: 18, fontWeight: '800', color: '#1a1a1a', textAlign: 'center' },
+  lockDesc: { fontSize: 14, color: '#888', textAlign: 'center' },
   questSubtitle: { fontSize: 13, color: '#aaa' },
   xpBadge: {
     backgroundColor: '#FFF3E8', borderRadius: 14, paddingHorizontal: 28, paddingVertical: 14,
