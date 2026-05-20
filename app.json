@@ -32,6 +32,7 @@
     "plugins": [
       "expo-audio",
       "./plugins/withExactAlarm",
+      "./plugins/withScreenState",
       [
         "expo-image-picker",
         {
