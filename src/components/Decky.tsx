@@ -1,7 +1,7 @@
 import React from 'react';
 import { Image } from 'react-native';
 
-export type DeckyPose = 'idle' | 'wave' | 'celebrate' | 'empty' | 'streak';
+export type DeckyPose = 'idle' | 'wave' | 'celebrate' | 'empty' | 'streak' | 'thinking';
 
 type Props = {
   pose: DeckyPose;
@@ -14,6 +14,7 @@ const POSE_ASSET: Record<DeckyPose, ReturnType<typeof require>> = {
   celebrate: require('../../assets/decky/celebrate.png'),
   empty:     require('../../assets/decky/empty.png'),
   streak:    require('../../assets/decky/streak.png'),
+  thinking:  require('../../assets/decky/idle.png'), // placeholder until thinking.png is available
 };
 
 export function Decky({ pose, size = 64 }: Props) {
