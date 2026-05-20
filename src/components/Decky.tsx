@@ -14,7 +14,7 @@ const POSE_ASSET: Record<DeckyPose, ReturnType<typeof require>> = {
   celebrate: require('../../assets/decky/celebrate.png'),
   empty:     require('../../assets/decky/empty.png'),
   streak:    require('../../assets/decky/streak.png'),
-  thinking:  require('../../assets/decky/idle.png'), // placeholder until thinking.png is available
+  thinking:  require('../../assets/decky/thinking.png'),
 };
 
 export function Decky({ pose, size = 64 }: Props) {
