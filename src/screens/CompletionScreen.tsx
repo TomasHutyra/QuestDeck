@@ -277,7 +277,7 @@ export function CompletionScreen({ navigation, route }: Props) {
       return (
         <SafeAreaView style={styles.safe}>
           <View style={styles.center}>
-            <Decky pose="thinking" size={80} />
+            <Decky pose="thinking" size={111} />
             <Text style={styles.lockTitle}>That was quick.</Text>
             <Text style={styles.lockDesc}>Give it a little more real-world time.</Text>
             <Text style={styles.lockDesc}>Come back when you're done.</Text>
