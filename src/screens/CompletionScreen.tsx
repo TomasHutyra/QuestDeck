@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View,
+  Alert, BackHandler, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/RootStack';
 import { questById } from '../data/quests';
@@ -131,6 +132,16 @@ export function CompletionScreen({ navigation, route }: Props) {
     }
   }, [result]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  useFocusEffect(
+    React.useCallback(() => {
+      const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+        handleBackToHome();
+        return true;
+      });
+      return () => sub.remove();
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  );
+
   const handleMarkDone = () => {
     if (!quest) return;
     if (lockState !== 'ready') return;
@@ -250,6 +261,10 @@ export function CompletionScreen({ navigation, route }: Props) {
             <Text style={styles.lockTitle}>Your quest has started.</Text>
             <Text style={styles.lockDesc}>Lock your phone and go do it.</Text>
             <Text style={styles.lockDesc}>Come back when you're done.</Text>
+            <View style={styles.questCard}>
+              <Text style={styles.questCardTitle}>{quest.title}</Text>
+              <Text style={styles.questCardDesc}>{quest.description}</Text>
+            </View>
             <TouchableOpacity style={styles.backLink} onPress={handleBackToHome}>
               <Text style={styles.backLinkText}>← Back to Home</Text>
             </TouchableOpacity>
@@ -266,6 +281,10 @@ export function CompletionScreen({ navigation, route }: Props) {
             <Text style={styles.lockTitle}>That was quick.</Text>
             <Text style={styles.lockDesc}>Give it a little more real-world time.</Text>
             <Text style={styles.lockDesc}>Come back when you're done.</Text>
+            <View style={styles.questCard}>
+              <Text style={styles.questCardTitle}>{quest.title}</Text>
+              <Text style={styles.questCardDesc}>{quest.description}</Text>
+            </View>
             <TouchableOpacity style={styles.backLink} onPress={handleBackToHome}>
               <Text style={styles.backLinkText}>← Back to Home</Text>
             </TouchableOpacity>
@@ -400,6 +419,12 @@ const styles = StyleSheet.create({
   questDesc: { fontSize: 13, color: '#888', textAlign: 'center' },
   lockTitle: { fontSize: 18, fontWeight: '800', color: '#1a1a1a', textAlign: 'center' },
   lockDesc: { fontSize: 14, color: '#888', textAlign: 'center' },
+  questCard: {
+    width: '100%', backgroundColor: '#FFF3E8', borderRadius: 14,
+    borderWidth: 1.5, borderColor: '#FFD0A0', padding: 16, gap: 6, marginTop: 4,
+  },
+  questCardTitle: { fontSize: 15, fontWeight: '800', color: '#1a1a1a', textAlign: 'center' },
+  questCardDesc: { fontSize: 13, color: '#888', textAlign: 'center' },
   questSubtitle: { fontSize: 13, color: '#aaa' },
   xpBadge: {
     backgroundColor: '#FFF3E8', borderRadius: 14, paddingHorizontal: 28, paddingVertical: 14,

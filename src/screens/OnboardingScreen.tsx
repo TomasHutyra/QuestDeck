@@ -6,25 +6,40 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/RootStack';
 import { useSettingsStore } from '../stores/settingsStore';
-import { Decky } from '../components/Decky';
+import { Decky, DeckyPose } from '../components/Decky';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Onboarding'>;
 
-const SLIDES = [
+const SLIDES: { pose: DeckyPose; emoji: string; title: string; body: string }[] = [
   {
+    pose: 'wave',
     emoji: '🎭',
     title: 'Pick a mood',
     body: 'Bored? At home? Out with friends? Choose how you feel right now.',
   },
   {
+    pose: 'idle',
     emoji: '🃏',
     title: 'Draw 3 quest cards',
     body: 'Tap to flip and reveal three real-world activity cards picked just for you.',
   },
   {
+    pose: 'idle',
+    emoji: '👆',
+    title: 'Choose one',
+    body: 'Pick the quest that calls to you. The others can wait.',
+  },
+  {
+    pose: 'streak',
+    emoji: '📵',
+    title: 'Lock your phone',
+    body: 'Lock the screen and go do it in real life. Come back when you\'re done.',
+  },
+  {
+    pose: 'celebrate',
     emoji: '🌍',
     title: 'Do something real',
-    body: 'Pick one quest, go do it, and earn XP. No screens required.',
+    body: 'Mark it done and earn XP. No screens required.',
   },
 ];
 
@@ -54,7 +69,7 @@ export function OnboardingScreen({ navigation }: Props) {
 
       <View style={styles.slide}>
         <View style={styles.mascotRow}>
-          <Decky pose="wave" size={72} />
+          <Decky pose={slide.pose} size={72} />
         </View>
         <Text style={styles.emoji}>{slide.emoji}</Text>
         <Text style={styles.title}>{slide.title}</Text>
